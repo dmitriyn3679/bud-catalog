@@ -1,5 +1,5 @@
 import { api } from '../../api/axios';
-import { Order } from '../../types';
+import type { Order } from '../../types';
 
 export const checkoutApi = {
   placeOrder: async (data: { deliveryAddress: string; note?: string }): Promise<Order> => {

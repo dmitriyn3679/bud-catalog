@@ -7,7 +7,6 @@ import {
   Grid,
   Group,
   Image,
-  Loader,
   Pagination,
   Select,
   SimpleGrid,
@@ -23,7 +22,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts, useCategories, useBrands } from './useCatalog';
-import { Category } from '../../types';
+import type { Category } from '../../types';
 
 function CategoryTree({
   categories,

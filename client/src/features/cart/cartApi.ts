@@ -1,5 +1,5 @@
 import { api } from '../../api/axios';
-import { Cart } from '../../types';
+import type { Cart } from '../../types';
 
 export const cartApi = {
   getCart: async (): Promise<Cart> => {

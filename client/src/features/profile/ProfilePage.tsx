@@ -52,7 +52,7 @@ function OrdersTab() {
               style={{ cursor: 'pointer' }}
               onClick={() => navigate(`/profile/orders/${order._id}`)}
             >
-              <Table.Td c="dimmed" size="sm">{order._id.slice(-6).toUpperCase()}</Table.Td>
+              <Table.Td c="dimmed" fz="sm">{order._id.slice(-6).toUpperCase()}</Table.Td>
               <Table.Td>{new Date(order.createdAt).toLocaleDateString('uk-UA')}</Table.Td>
               <Table.Td fw={600}>{order.total.toLocaleString('uk-UA')} ₴</Table.Td>
               <Table.Td><OrderStatusBadge status={order.status} /></Table.Td>

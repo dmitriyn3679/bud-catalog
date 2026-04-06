@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { User } from '../../types';
+import type { User } from '../../types';
 import { setAccessToken } from '../../api/axios';
 import { authApi } from './authApi';
 import { AuthContext } from './useAuth';
@@ -18,7 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(({ accessToken }) => {
         setAccessToken(accessToken);
         // decode user from token payload
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
         // fetch full user profile
         import('../../api/axios').then(({ api }) =>
           api.get<User>('/users/me').then((r) => setUser(r.data)),

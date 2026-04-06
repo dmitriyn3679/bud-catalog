@@ -1,5 +1,5 @@
 import { api } from '../../api/axios';
-import { Order, Paginated, User } from '../../types';
+import type { Order, Paginated, User } from '../../types';
 
 export const profileApi = {
   getOrders: async (page = 1): Promise<Paginated<Order>> => {

@@ -1,5 +1,5 @@
 import { Badge } from '@mantine/core';
-import { Order } from '../../types';
+import type { Order } from '../../types';
 
 const STATUS_MAP: Record<Order['status'], { label: string; color: string }> = {
   pending:    { label: 'Очікує',     color: 'yellow' },

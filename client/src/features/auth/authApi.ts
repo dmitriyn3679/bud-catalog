@@ -1,5 +1,5 @@
 import { api, setAccessToken } from '../../api/axios';
-import { User } from '../../types';
+import type { User } from '../../types';
 
 interface AuthResponse {
   accessToken: string;

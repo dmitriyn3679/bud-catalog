@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { catalogApi, ProductFilters } from './catalogApi';
+import { catalogApi } from './catalogApi';
+import type { ProductFilters } from './catalogApi';
 
 export function useProducts(filters: ProductFilters) {
   return useQuery({

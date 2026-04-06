@@ -1,5 +1,5 @@
 import { api } from '../../api/axios';
-import { Brand, Category, Paginated, Product } from '../../types';
+import type { Brand, Category, Paginated, Product } from '../../types';
 
 export interface ProductFilters {
   category?: string;
