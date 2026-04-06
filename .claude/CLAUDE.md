@@ -284,9 +284,9 @@ Auth: guest can browse catalog/product; cart/favorites/checkout/profile require 
 ## Implementation Phases
 
 - [x] Phase 0 — Scaffold (done)
-- [ ] Phase 1 — Backend: Auth (User model, JWT, auth routes)
-- [ ] Phase 2 — Backend: Catalog (Brand, Category, Product + Cloudinary)
-- [ ] Phase 3 — Backend: Cart, Favorites, Orders
-- [ ] Phase 4 — Client: Auth + Catalog pages
-- [ ] Phase 5 — Client: Cart, Favorites, Checkout, Profile
-- [ ] Phase 6 — Admin Panel
+- [x] Phase 1 — Backend: Auth (User model, JWT, auth routes)
+- [x] Phase 2 — Backend: Catalog (Brand, Category, Product + Cloudinary)
+- [x] Phase 3 — Backend: Cart, Favorites, Orders
+- [x] Phase 4 — Client: Auth + Catalog pages
+- [x] Phase 5 — Client: Cart, Favorites, Checkout, Profile
+- [x] Phase 6 — Admin Panel
