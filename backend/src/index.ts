@@ -5,6 +5,10 @@ import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db';
 import { errorHandler } from './middlewares/errorHandler';
 import { authRouter } from './routes/auth.routes';
+import { userRouter } from './routes/user.routes';
+import { brandRouter } from './routes/brand.routes';
+import { categoryRouter } from './routes/category.routes';
+import { productRouter } from './routes/product.routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,11 +28,11 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
-// TODO Phase 2+:
-// app.use('/api/users', userRouter);
-// app.use('/api/products', productRouter);
-// app.use('/api/brands', brandRouter);
-// app.use('/api/categories', categoryRouter);
+app.use('/api/users', userRouter);
+app.use('/api/brands', brandRouter);
+app.use('/api/categories', categoryRouter);
+app.use('/api/products', productRouter);
+// TODO Phase 3+:
 // app.use('/api/cart', cartRouter);
 // app.use('/api/favorites', favoritesRouter);
 // app.use('/api/orders', orderRouter);
