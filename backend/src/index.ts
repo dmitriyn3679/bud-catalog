@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db';
+import { errorHandler } from './middlewares/errorHandler';
+import { authRouter } from './routes/auth.routes';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -17,13 +19,12 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// routes will be mounted here (Phase 1+)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// TODO: mount routes
-// app.use('/api/auth', authRouter);
+app.use('/api/auth', authRouter);
+// TODO Phase 2+:
 // app.use('/api/users', userRouter);
 // app.use('/api/products', productRouter);
 // app.use('/api/brands', brandRouter);
@@ -32,6 +33,8 @@ app.get('/api/health', (_req, res) => {
 // app.use('/api/favorites', favoritesRouter);
 // app.use('/api/orders', orderRouter);
 // app.use('/api/admin', adminRouter);
+
+app.use(errorHandler);
 
 connectDB().then(() => {
   app.listen(PORT, () => {
