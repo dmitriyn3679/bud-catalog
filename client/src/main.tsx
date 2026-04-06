@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
         <MantineProvider>
           <Notifications position="top-right" />
           <App />
+          <ReactQueryDevtools initialIsOpen={false} />
         </MantineProvider>
       </QueryClientProvider>
     </BrowserRouter>
