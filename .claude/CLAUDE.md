@@ -98,13 +98,16 @@ catalog-shop/
 ### Product
 ```ts
 {
-  title, description, price,
+  title, description,
+  price: Number,           // client price — exposed to everyone
+  purchasePrice: Number,   // purchase/cost price — admin only, NEVER sent to client API
   images: [{ url, publicId }],  // Cloudinary
   categoryId: ObjectId,          // leaf category
   brandId: ObjectId,
   stock, isActive
 }
 ```
+**Security rule:** `purchasePrice` must be stripped from all public product endpoints via Mongoose `select: false` or explicit projection.
 
 ### Cart
 ```ts
@@ -122,13 +125,21 @@ catalog-shop/
 ```ts
 {
   userId: ObjectId,
-  items: [{ productId, title, price, quantity }],  // price snapshot at order time
-  total: Number,
+  items: [{
+    productId,
+    title,
+    price,           // client price snapshot at order time
+    purchasePrice,   // cost price snapshot at order time (for profit calc)
+    quantity
+  }],
+  total: Number,     // sum of price * quantity
   status: 'pending' | 'processing' | 'delivered' | 'cancelled',
   deliveryAddress: String,
   note?: String,
   createdAt: Date
 }
+// profit per order = sum of (price - purchasePrice) * quantity
+// purchasePrice in order items is admin-only, stripped from user-facing responses
 ```
 
 ## REST API
@@ -201,10 +212,28 @@ GET    /api/orders/:id  [auth]
 
 ### Admin Orders
 ```
-GET    /api/admin/orders           ?status&page&limit
+GET    /api/admin/orders             ?status&page&limit
 GET    /api/admin/orders/:id
 PATCH  /api/admin/orders/:id/status  { status }
 ```
+
+### Admin Stats
+```
+GET    /api/admin/stats              # global: total sold, revenue, profit, avg markup
+GET    /api/admin/stats?categoryId=  # same but scoped to category (+ its subcategories)
+GET    /api/admin/stats?productId=   # stats for single product
+```
+Response shape:
+```ts
+{
+  totalOrders: number,
+  totalUnitsSold: number,
+  totalRevenue: number,   // sum of price * qty across delivered orders
+  totalProfit: number,    // sum of (price - purchasePrice) * qty
+  avgMarkupPercent: number  // avg ((price - purchasePrice) / purchasePrice * 100)
+}
+```
+Stats are calculated only from orders with status `delivered`.
 
 ## Client Pages
 
@@ -227,12 +256,13 @@ Auth: guest can browse catalog/product; cart/favorites/checkout/profile require 
 | Route | Component |
 |-------|-----------|
 | `/admin/login` | Admin login (role=admin only) |
-| `/admin` | Dashboard: order counts by status |
-| `/admin/products` | Product list + search |
-| `/admin/products/new` | Product form |
-| `/admin/products/:id/edit` | Edit product |
+| `/admin` | Dashboard: order counts by status + global stats (revenue, profit, avg markup) |
+| `/admin/products` | Product list + search; columns: title, clientPrice, purchasePrice, markup%, stock |
+| `/admin/products/new` | Product form: both `price` (client) and `purchasePrice` fields |
+| `/admin/products/:id/edit` | Edit product + per-product stats (units sold, revenue, profit) |
 | `/admin/orders` | All orders, filter by status |
 | `/admin/orders/:id` | Order detail + status dropdown |
+| `/admin/stats` | Stats page: filter by category or product; shows revenue, profit, markup |
 
 ## Code Conventions
 
