@@ -8,6 +8,9 @@ import { ProductFormPage } from './features/products/ProductFormPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { OrderDetailPage } from './features/orders/OrderDetailPage';
 import { StatsPage } from './features/stats/StatsPage';
+import { CategoriesPage } from './features/categories/CategoriesPage';
+import { BrandsPage } from './features/brands/BrandsPage';
+import { UsersPage } from './features/users/UsersPage';
 
 export default function App() {
   return (
@@ -22,6 +25,9 @@ export default function App() {
                 <Routes>
                   <Route index element={<Navigate to="products" replace />} />
                   <Route path="products" element={<ProductsPage />} />
+                  <Route path="categories" element={<CategoriesPage />} />
+                  <Route path="brands" element={<BrandsPage />} />
+                  <Route path="users" element={<UsersPage />} />
                   <Route path="products/new" element={<ProductFormPage />} />
                   <Route path="products/:id/edit" element={<ProductFormPage />} />
                   <Route path="orders" element={<OrdersPage />} />

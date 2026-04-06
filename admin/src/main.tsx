@@ -7,7 +7,6 @@ import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
-import '@mantine/modals/styles.css';
 import App from './App';
 
 const queryClient = new QueryClient({

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler';
 import { validate } from '../utils/validate';
 import { authMiddleware } from '../middlewares/auth';
+import { optionalAuth } from '../middlewares/optionalAuth';
 import { roleGuard } from '../middlewares/roleGuard';
 import { upload } from '../utils/upload';
 import * as controller from '../controllers/product.controller';
@@ -35,9 +36,9 @@ const updateBodySchema = z.object({
   }),
 });
 
-// Public routes
-productRouter.get('/', asyncHandler(controller.getAll));
-productRouter.get('/:id', asyncHandler(controller.getById));
+// Public routes (optionalAuth to apply per-user pricing when logged in)
+productRouter.get('/', optionalAuth, asyncHandler(controller.getAll));
+productRouter.get('/:id', optionalAuth, asyncHandler(controller.getById));
 
 // Admin routes
 productRouter.get('/admin/list', authMiddleware, roleGuard('admin'), asyncHandler(controller.getAllAdmin));

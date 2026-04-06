@@ -1,4 +1,4 @@
-import { Anchor, Box, Button, Center, Paper, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Anchor, Box, Button, Center, Paper, PasswordInput, Stack, TextInput, Title, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +8,9 @@ import { useAuth } from './useAuth';
 
 const schema = z.object({
   name: z.string().min(2, 'Мінімум 2 символи'),
+  shopName: z.string().min(2, 'Мінімум 2 символи'),
+  city: z.string().min(2, 'Мінімум 2 символи'),
+  address: z.string().min(5, 'Мінімум 5 символів'),
   email: z.string().email('Невірний email'),
   password: z.string().min(8, 'Мінімум 8 символів'),
   confirmPassword: z.string(),
@@ -28,7 +31,7 @@ export function RegisterPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await registerUser(data.email, data.password, data.name);
+      await registerUser(data.email, data.password, data.name, data.shopName, data.city, data.address);
       navigate('/');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -37,8 +40,8 @@ export function RegisterPage() {
   };
 
   return (
-    <Center h="100vh">
-      <Box w={360}>
+    <Center mih="100vh" py="xl">
+      <Box w={400}>
         <Title ta="center" mb="sm">Реєстрація</Title>
         <Text c="dimmed" size="sm" ta="center" mb="xl">
           Вже є акаунт?{' '}
@@ -49,10 +52,28 @@ export function RegisterPage() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <Stack>
               <TextInput
-                label="Ім'я"
+                label="Контактне ім'я"
                 placeholder="Іван Іваненко"
                 {...register('name')}
                 error={errors.name?.message}
+              />
+              <TextInput
+                label="Назва підприємства / магазину"
+                placeholder="ФОП Іваненко"
+                {...register('shopName')}
+                error={errors.shopName?.message}
+              />
+              <TextInput
+                label="Місто"
+                placeholder="Київ"
+                {...register('city')}
+                error={errors.city?.message}
+              />
+              <TextInput
+                label="Адреса"
+                placeholder="вул. Хрещатик, 1"
+                {...register('address')}
+                error={errors.address?.message}
               />
               <TextInput
                 label="Email"

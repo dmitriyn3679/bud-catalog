@@ -9,8 +9,8 @@ const REFRESH_COOKIE_OPTIONS = {
 };
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password, name } = req.body;
-  const { tokens, user } = await authService.register(email, password, name);
+  const { email, password, name, shopName, city, address } = req.body;
+  const { tokens, user } = await authService.register(email, password, { name, shopName, city, address });
   res.cookie('refreshToken', tokens.refreshToken, REFRESH_COOKIE_OPTIONS);
   res.status(201).json({ accessToken: tokens.accessToken, user });
 };

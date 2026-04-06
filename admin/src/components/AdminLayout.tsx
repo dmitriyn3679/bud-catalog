@@ -2,16 +2,22 @@ import { AppShell, Button, NavLink, Stack, Text, Title } from '@mantine/core';
 import {
   IconChartBar,
   IconClipboardList,
+  IconFolderOpen,
   IconLogout,
   IconPackage,
+  IconTag,
+  IconUsers,
 } from '@tabler/icons-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../features/auth/useAdminAuth';
 
 const NAV_ITEMS = [
-  { label: 'Товари',     icon: IconPackage,       href: '/admin/products' },
-  { label: 'Замовлення', icon: IconClipboardList,  href: '/admin/orders'   },
-  { label: 'Статистика', icon: IconChartBar,       href: '/admin/stats'    },
+  { label: 'Товари',     icon: IconPackage,      href: '/admin/products'   },
+  { label: 'Категорії',  icon: IconFolderOpen,   href: '/admin/categories' },
+  { label: 'Бренди',     icon: IconTag,           href: '/admin/brands'     },
+  { label: 'Клієнти',    icon: IconUsers,         href: '/admin/users'      },
+  { label: 'Замовлення', icon: IconClipboardList,  href: '/admin/orders'     },
+  { label: 'Статистика', icon: IconChartBar,      href: '/admin/stats'      },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

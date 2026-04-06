@@ -2,8 +2,10 @@ export interface User {
   _id: string;
   email: string;
   name: string;
+  shopName: string;
+  city: string;
+  address: string;
   phone?: string;
-  address?: string;
   role: 'user' | 'admin';
 }
 

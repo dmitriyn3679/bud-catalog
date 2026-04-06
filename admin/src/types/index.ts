@@ -78,6 +78,24 @@ export interface Stats {
   avgMarkupPercent: number;
 }
 
+export interface AdminUser {
+  _id: string;
+  name: string;
+  email: string;
+  shopName: string;
+  city: string;
+  address: string;
+  phone?: string;
+  globalMarkupPercent?: number;
+  createdAt: string;
+}
+
+export interface UserMarkup {
+  _id: string;
+  categoryId: CategoryRef;
+  markupPercent: number;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

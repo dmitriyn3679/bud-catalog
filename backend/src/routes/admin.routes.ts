@@ -21,3 +21,13 @@ adminRouter.get('/orders', asyncHandler(controller.getOrders));
 adminRouter.get('/orders/:id', asyncHandler(controller.getOrderById));
 adminRouter.patch('/orders/:id/status', validate(updateStatusSchema), asyncHandler(controller.updateOrderStatus));
 adminRouter.get('/stats', asyncHandler(controller.getStats));
+
+const markupSchema = z.object({
+  body: z.object({ markupPercent: z.number().min(0) }),
+});
+
+adminRouter.get('/users', asyncHandler(controller.getUsers));
+adminRouter.get('/users/:id/markups', asyncHandler(controller.getUserMarkups));
+adminRouter.put('/users/:id/global-markup', validate(markupSchema), asyncHandler(controller.upsertUserGlobalMarkup));
+adminRouter.put('/users/:id/markups/:categoryId', validate(markupSchema), asyncHandler(controller.upsertUserMarkup));
+adminRouter.delete('/users/:id/markups/:categoryId', asyncHandler(controller.deleteUserMarkup));

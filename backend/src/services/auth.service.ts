@@ -24,18 +24,22 @@ function makeTokenPair(id: string, role: string) {
   };
 }
 
-export async function register(email: string, password: string, name: string) {
+export async function register(
+  email: string,
+  password: string,
+  profile: { name: string; shopName: string; city: string; address: string },
+) {
   const existing = await User.findOne({ email });
   if (existing) throw new AppError('Email already in use', 409);
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({ email, passwordHash, name });
+  const user = await User.create({ email, passwordHash, ...profile });
 
   const tokens = makeTokenPair(user.id, user.role);
   const refreshTokenHash = await bcrypt.hash(tokens.refreshToken, SALT_ROUNDS);
   await User.findByIdAndUpdate(user.id, { refreshTokenHash });
 
-  return { tokens, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+  return { tokens, user: { id: user.id, email: user.email, name: user.name, shopName: user.shopName, city: user.city, address: user.address, role: user.role } };
 }
 
 export async function login(email: string, password: string) {

@@ -12,6 +12,9 @@ const registerSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     name: z.string().min(2).max(100),
+    shopName: z.string().min(2).max(200),
+    city: z.string().min(2).max(100),
+    address: z.string().min(5).max(300),
   }),
 });
 

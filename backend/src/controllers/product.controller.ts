@@ -14,12 +14,12 @@ const parseFilters = (query: Request['query']) => ({
 
 // Public
 export const getAll = async (req: Request, res: Response) => {
-  const result = await productService.getAll(parseFilters(req.query));
+  const result = await productService.getAll(parseFilters(req.query), req.user?.id);
   res.json(result);
 };
 
 export const getById = async (req: Request<IdParam>, res: Response) => {
-  const product = await productService.getById(req.params.id);
+  const product = await productService.getById(req.params.id, req.user?.id);
   res.json(product);
 };
 
