@@ -1,38 +1,39 @@
 import { Routes, Route } from 'react-router-dom';
-import { Text } from '@mantine/core';
 import { AuthProvider } from './features/auth/AuthProvider';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
 import { CatalogPage } from './features/catalog/CatalogPage';
 import { ProductPage } from './features/catalog/ProductPage';
+import { CartPage } from './features/cart/CartPage';
+import { FavoritesPage } from './features/favorites/FavoritesPage';
+import { CheckoutPage } from './features/checkout/CheckoutPage';
+import { ProfilePage } from './features/profile/ProfilePage';
 import { Layout } from './components/Layout';
 
-// TODO Phase 5:
-// import { CartPage } from './features/cart/CartPage';
-// import { FavoritesPage } from './features/favorites/FavoritesPage';
-// import { CheckoutPage } from './features/checkout/CheckoutPage';
-// import { ProfilePage } from './features/profile/ProfilePage';
+function WithLayout({ children }: { children: React.ReactNode }) {
+  return <Layout>{children}</Layout>;
+}
+
+function Protected({ children }: { children: React.ReactNode }) {
+  return <ProtectedRoute><WithLayout>{children}</WithLayout></ProtectedRoute>;
+}
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Layout wrapper */}
-        <Route element={<Layout><Text /></Layout>}>
-          <Route path="/" element={<Layout><CatalogPage /></Layout>} />
-          <Route path="/product/:id" element={<Layout><ProductPage /></Layout>} />
+        <Route path="/" element={<WithLayout><CatalogPage /></WithLayout>} />
+        <Route path="/product/:id" element={<WithLayout><ProductPage /></WithLayout>} />
 
-          {/* Protected */}
-          <Route path="/cart" element={<ProtectedRoute><Layout><Text>Cart — coming soon</Text></Layout></ProtectedRoute>} />
-          <Route path="/favorites" element={<ProtectedRoute><Layout><Text>Favorites — coming soon</Text></Layout></ProtectedRoute>} />
-          <Route path="/checkout" element={<ProtectedRoute><Layout><Text>Checkout — coming soon</Text></Layout></ProtectedRoute>} />
-          <Route path="/profile/*" element={<ProtectedRoute><Layout><Text>Profile — coming soon</Text></Layout></ProtectedRoute>} />
-        </Route>
+        <Route path="/cart" element={<Protected><CartPage /></Protected>} />
+        <Route path="/favorites" element={<Protected><FavoritesPage /></Protected>} />
+        <Route path="/checkout" element={<Protected><CheckoutPage /></Protected>} />
+        <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
+        <Route path="/profile/orders/:orderId" element={<Protected><ProfilePage /></Protected>} />
       </Routes>
     </AuthProvider>
   );
