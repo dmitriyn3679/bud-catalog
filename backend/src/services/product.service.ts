@@ -15,7 +15,8 @@ export interface ProductFilters {
   limit?: number;
 }
 
-function buildSort(sort: SortOption | undefined, hasSearch: boolean): Record<string, unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildSort(sort: SortOption | undefined, hasSearch: boolean): any {
   if (hasSearch) return { score: { $meta: 'textScore' } };
   switch (sort) {
     case 'price_asc':  return { price: 1 };
