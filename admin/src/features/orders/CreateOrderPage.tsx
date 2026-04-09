@@ -86,7 +86,7 @@ function AddProductRow({
 }) {
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 350);
-  const { data } = useAdminProducts(debouncedSearch || undefined, 1);
+  const { data } = useAdminProducts({ search: debouncedSearch || undefined, page: 1 });
 
   const options = (data?.items ?? [])
     .filter((p) => p.isActive && !existingProductIds.has(p._id))

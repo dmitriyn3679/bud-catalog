@@ -71,7 +71,7 @@ function AddProductRow({
   const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null);
   const [qty, setQty] = useState(1);
 
-  const { data } = useAdminProducts(debouncedSearch || undefined, 1);
+  const { data } = useAdminProducts({ search: debouncedSearch || undefined, page: 1 });
 
   const options = (data?.items ?? [])
     .filter((p) => p.isActive && !existingProductIds.has(p._id))
@@ -203,13 +203,13 @@ export function OrderDetailPage() {
   const effPurchasePrice = (item: OrderItem) =>
     (localPrices[item.productId] ?? item.actualPurchasePrice) ?? item.purchasePrice;
 
-  const estimatedProfit = activeItems.reduce((sum, i) => sum + (i.price - i.purchasePrice) * i.quantity, 0);
+  const _estimatedProfit = activeItems.reduce((sum, i) => sum + (i.price - i.purchasePrice) * i.quantity, 0); void _estimatedProfit;
   const actualProfit    = activeItems.reduce((sum, i) => sum + (effClientPrice(i) - effPurchasePrice(i)) * i.quantity, 0);
   const effectiveCost   = activeItems.reduce((sum, i) => sum + effPurchasePrice(i) * i.quantity, 0);
   const effectiveTotal  = activeItems.reduce((sum, i) => sum + effClientPrice(i) * i.quantity, 0);
-  const hasActualPrices = activeItems.some(
+  const _hasActualPrices = activeItems.some(
     (i) => (i.actualPurchasePrice ?? null) !== null || localPrices[i.productId] !== null,
-  );
+  ); void _hasActualPrices;
 
   const hasClientPriceChanges = Object.values(localClientPrices).some((v) => v !== null);
   const isPricesDirty =
