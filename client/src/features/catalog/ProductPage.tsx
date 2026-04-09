@@ -12,7 +12,6 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  ThemeIcon,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconHeart, IconHeartFilled, IconShoppingBag, IconChevronLeft } from '@tabler/icons-react';

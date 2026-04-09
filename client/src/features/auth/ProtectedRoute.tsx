@@ -5,7 +5,7 @@ import { useAuth } from './useAuth';
 import { authApi } from './authApi';
 
 function SuspendedPage() {
-  const { logout } = useAuth();
+  useAuth();
   return (
     <Center mih="100vh">
       <Stack align="center" gap="md" maw={400} ta="center">
