@@ -1,10 +1,11 @@
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
+import type { DateValue } from '@mantine/dates';
 import { IconX } from '@tabler/icons-react';
 
 interface Props {
-  value: [Date | string | null, Date | string | null];
-  onChange: (value: [Date | string | null, Date | string | null]) => void;
+  value: [DateValue, DateValue];
+  onChange: (value: [DateValue, DateValue]) => void;
 }
 
 export function DateRangeFilter({ value, onChange }: Props) {

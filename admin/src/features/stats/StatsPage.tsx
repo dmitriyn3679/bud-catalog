@@ -40,7 +40,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
 
 export function StatsPage() {
   const [categoryId, setCategoryId] = useState<string>('');
-  const [dateRange, setDateRange] = useState<[Date | string | null, Date | string | null]>([null, null]);
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
 
   const { data: categories = [] } = useAdminCategories();
   const categoryOptions = [{ value: '', label: 'Всі категорії' }, ...flatCategories(categories)];

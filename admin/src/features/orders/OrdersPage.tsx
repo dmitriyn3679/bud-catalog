@@ -35,7 +35,7 @@ export function OrdersPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
-  const [dateRange, setDateRange] = useState<[Date | string | null, Date | string | null]>([null, null]);
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [isPaidFilter, setIsPaidFilter] = useState<'paid' | 'unpaid' | ''>('');
 
   const isPaid = isPaidFilter === 'paid' ? true : isPaidFilter === 'unpaid' ? false : undefined;
