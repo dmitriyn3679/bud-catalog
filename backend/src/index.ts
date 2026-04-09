@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db';
+import { ensureRetailUser } from './utils/ensureRetailUser';
+import { ensureAdmin } from './utils/ensureAdmin';
 import { errorHandler } from './middlewares/errorHandler';
 import { authRouter } from './routes/auth.routes';
 import { userRouter } from './routes/user.routes';
@@ -43,7 +45,9 @@ app.use('/api/admin', adminRouter);
 
 app.use(errorHandler);
 
-connectDB().then(() => {
+connectDB().then(async () => {
+  await ensureAdmin();
+  await ensureRetailUser();
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });

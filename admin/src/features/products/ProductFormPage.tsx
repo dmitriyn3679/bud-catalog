@@ -37,6 +37,7 @@ import {
 import type { Category } from '../../types';
 
 const schema = z.object({
+  sku: z.string().max(100).optional(),
   title: z.string().min(1, 'Обов\'язкове поле'),
   description: z.string().min(1, 'Обов\'язкове поле'),
   price: z.number({ invalid_type_error: 'Введіть число' }).min(0),
@@ -45,12 +46,15 @@ const schema = z.object({
   brandId: z.string().min(1, 'Оберіть бренд'),
   stock: z.number().min(0),
   isActive: z.boolean(),
+  isPromo: z.boolean(),
+  unlimitedStock: z.boolean(),
+  hidePrice: z.boolean(),
 });
 type FormData = z.infer<typeof schema>;
 
 function flattenCategories(cats: Category[]): { value: string; label: string }[] {
   return cats.flatMap((cat) => [
-    ...(cat.children.length ? [] : [{ value: cat._id, label: cat.name }]),
+    { value: cat._id, label: cat.name },
     ...cat.children.map((sub) => ({ value: sub._id, label: `${cat.name} → ${sub.name}` })),
   ]);
 }
@@ -70,15 +74,19 @@ export function ProductFormPage() {
   const deleteImage = useDeleteImage(id ?? '');
 
   const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [markup, setMarkup] = useState<number | ''>('');
 
-  const { control, register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  const { control, register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { isActive: true, stock: 0 },
+    defaultValues: { sku: '', isActive: true, isPromo: false, unlimitedStock: false, hidePrice: false, stock: 0 },
   });
 
   useEffect(() => {
     if (product) {
       reset({
+        sku: product.sku ?? '',
         title: product.title,
         description: product.description,
         price: product.price,
@@ -87,13 +95,17 @@ export function ProductFormPage() {
         brandId: product.brandId._id,
         stock: product.stock,
         isActive: product.isActive,
+        isPromo: product.isPromo ?? false,
+        unlimitedStock: product.unlimitedStock ?? false,
+        hidePrice: product.hidePrice ?? false,
       });
+      if (product.purchasePrice > 0) {
+        setMarkup(round2(((product.price - product.purchasePrice) / product.purchasePrice) * 100));
+      }
     }
   }, [product, reset]);
 
-  const price = watch('price') ?? 0;
-  const purchasePrice = watch('purchasePrice') ?? 0;
-  const markupPct = purchasePrice > 0 ? (((price - purchasePrice) / purchasePrice) * 100).toFixed(1) : '—';
+  const unlimitedStock = watch('unlimitedStock');
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -141,7 +153,10 @@ export function ProductFormPage() {
         <Stack gap="md">
           <Paper withBorder p="lg" radius="md">
             <Stack>
-              <TextInput label="Назва" {...register('title')} error={errors.title?.message} />
+              <SimpleGrid cols={2} spacing="sm">
+                <TextInput label="Назва" {...register('title')} error={errors.title?.message} />
+                <TextInput label="Артикул" placeholder="SKU-001" {...register('sku')} error={errors.sku?.message} />
+              </SimpleGrid>
               <Textarea label="Опис" rows={4} {...register('description')} error={errors.description?.message} />
 
               <Group grow>
@@ -181,28 +196,58 @@ export function ProductFormPage() {
             <Title order={5} mb="md">Ціни та склад</Title>
             <Group grow align="flex-start">
               <Controller
-                name="price"
-                control={control}
-                render={({ field }) => (
-                  <NumberInput
-                    label="Ціна для клієнта (₴)"
-                    value={field.value}
-                    onChange={field.onChange}
-                    min={0}
-                    error={errors.price?.message}
-                  />
-                )}
-              />
-              <Controller
                 name="purchasePrice"
                 control={control}
                 render={({ field }) => (
                   <NumberInput
                     label="Закупівельна ціна (₴)"
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(v) => {
+                      const pp = typeof v === 'number' ? v : 0;
+                      field.onChange(pp);
+                      if (markup !== '' && pp > 0) {
+                        setValue('price', round2(pp * (1 + (markup as number) / 100)));
+                      } else if (pp > 0) {
+                        const p = watch('price') ?? 0;
+                        setMarkup(round2(((p - pp) / pp) * 100));
+                      }
+                    }}
                     min={0}
                     error={errors.purchasePrice?.message}
+                  />
+                )}
+              />
+              <NumberInput
+                label="Націнка (%)"
+                value={markup}
+                onChange={(v) => {
+                  const m = typeof v === 'number' ? v : '';
+                  setMarkup(m);
+                  if (typeof m === 'number') {
+                    const pp = watch('purchasePrice') ?? 0;
+                    if (pp > 0) setValue('price', round2(pp * (1 + m / 100)));
+                  }
+                }}
+                min={0}
+                suffix=" %"
+                decimalScale={2}
+                placeholder="—"
+              />
+              <Controller
+                name="price"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label="Ціна для клієнта (₴)"
+                    value={field.value}
+                    onChange={(v) => {
+                      const p = typeof v === 'number' ? v : 0;
+                      field.onChange(p);
+                      const pp = watch('purchasePrice') ?? 0;
+                      if (pp > 0) setMarkup(round2(((p - pp) / pp) * 100));
+                    }}
+                    min={0}
+                    error={errors.price?.message}
                   />
                 )}
               />
@@ -210,13 +255,16 @@ export function ProductFormPage() {
                 name="stock"
                 control={control}
                 render={({ field }) => (
-                  <NumberInput label="Кількість на складі" value={field.value} onChange={field.onChange} min={0} />
+                  <NumberInput
+                    label="Кількість на складі"
+                    value={unlimitedStock ? 9999 : field.value}
+                    onChange={field.onChange}
+                    min={0}
+                    disabled={unlimitedStock}
+                  />
                 )}
               />
             </Group>
-            <Text size="sm" c="dimmed" mt="xs">
-              Націнка: <Text span fw={600} c={Number(markupPct) > 0 ? 'green' : 'red'}>{markupPct}%</Text>
-            </Text>
           </Paper>
 
           {/* Images */}
@@ -257,17 +305,55 @@ export function ProductFormPage() {
           </Paper>
 
           <Paper withBorder p="lg" radius="md">
-            <Controller
-              name="isActive"
-              control={control}
-              render={({ field }) => (
-                <Checkbox
-                  label="Товар активний (відображається в каталозі)"
-                  checked={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
+            <Stack gap="sm">
+              <Controller
+                name="isActive"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    label="Товар активний (відображається в каталозі)"
+                    checked={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+              <Controller
+                name="isPromo"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    label="Акційний товар (виводиться першим у каталозі)"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    color="orange"
+                  />
+                )}
+              />
+              <Controller
+                name="unlimitedStock"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    label="Необмежена кількість (купівля не знімає залишок, клієнт бачить +9999)"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    color="blue"
+                  />
+                )}
+              />
+              <Controller
+                name="hidePrice"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    label="Приховати ціну (клієнт бачить «Ціна за запитом», не може додати до кошика)"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    color="violet"
+                  />
+                )}
+              />
+            </Stack>
           </Paper>
 
           <Group>

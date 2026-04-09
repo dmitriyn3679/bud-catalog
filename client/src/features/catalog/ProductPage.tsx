@@ -2,9 +2,9 @@ import {
   ActionIcon,
   Badge,
   Box,
-  Breadcrumbs,
   Button,
   Center,
+  Divider,
   Group,
   Image,
   Loader,
@@ -12,10 +12,10 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  Title,
+  ThemeIcon,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconHeart, IconHeartFilled, IconShoppingCart } from '@tabler/icons-react';
+import { IconHeart, IconHeartFilled, IconShoppingBag, IconChevronLeft } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useProduct } from './useCatalog';
@@ -32,13 +32,14 @@ export function ProductPage() {
   const toggleFavorite = useToggleFavorite();
   const isFavorite = useIsFavorite(id!);
 
-  if (isLoading) return <Center h={400}><Loader /></Center>;
-  if (isError || !product) return <Center h={400}><Text c="red">Товар не знайдено</Text></Center>;
+  if (isLoading) return <Center h={400}><Loader size="sm" /></Center>;
+  if (isError || !product) return <Center h={400}><Text c="dimmed">Товар не знайдено</Text></Center>;
+
+  const effectiveStock = product.unlimitedStock ? 9999 : product.stock;
 
   const handleAddToCart = async () => {
     try {
       await addToCart.mutateAsync({ productId: product._id, quantity: qty });
-      notifications.show({ color: 'green', message: 'Додано до кошика' });
     } catch {
       notifications.show({ color: 'red', message: 'Помилка. Можливо, недостатньо на складі' });
     }
@@ -53,37 +54,61 @@ export function ProductPage() {
   };
 
   return (
-    <Stack>
-      <Breadcrumbs>
-        <Link to="/" style={{ textDecoration: 'none', color: 'var(--mantine-color-blue-6)' }}>Каталог</Link>
-        <Text size="sm">{product.categoryId.name}</Text>
-        <Text size="sm" c="dimmed">{product.title}</Text>
-      </Breadcrumbs>
+    <Stack gap="lg">
+      {/* Breadcrumb */}
+      <Group gap={6}>
+        <Text
+          component={Link}
+          to="/"
+          size="sm"
+          c="dimmed"
+          style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 2 }}
+        >
+          <IconChevronLeft size={14} />
+          Каталог
+        </Text>
+        <Text size="sm" c="dimmed">·</Text>
+        <Text size="sm" c="dimmed">{product.categoryId.name}</Text>
+      </Group>
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
-        {/* Images */}
+        {/* Gallery */}
         <Stack gap="sm">
-          <Image
-            src={product.images[activeImage]?.url}
-            radius="md"
-            h={380}
-            fit="contain"
-            fallbackSrc="https://placehold.co/400x380?text=No+image"
-          />
+          <Box
+            style={{
+              background: 'var(--mantine-color-gray-0)',
+              borderRadius: 12,
+              border: '1px solid var(--mantine-color-gray-2)',
+              overflow: 'hidden',
+              padding: 16,
+            }}
+          >
+            <Image
+              src={product.images[activeImage]?.url}
+              h={360}
+              fit="contain"
+              fallbackSrc="https://placehold.co/400x360?text=—"
+            />
+          </Box>
           {product.images.length > 1 && (
             <Group gap="xs">
               {product.images.map((img, i) => (
                 <Box
                   key={img.publicId}
-                  style={{
-                    border: `2px solid ${i === activeImage ? 'var(--mantine-color-blue-5)' : 'var(--mantine-color-gray-3)'}`,
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                    overflow: 'hidden',
-                  }}
                   onClick={() => setActiveImage(i)}
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 8,
+                    border: `2px solid ${i === activeImage ? 'var(--mantine-color-dark-4)' : 'var(--mantine-color-gray-3)'}`,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    padding: 4,
+                    background: 'var(--mantine-color-gray-0)',
+                    transition: 'border-color 0.15s',
+                  }}
                 >
-                  <Image src={img.url} w={64} h={64} fit="cover" />
+                  <Image src={img.url} w="100%" h="100%" fit="contain" />
                 </Box>
               ))}
             </Group>
@@ -91,42 +116,125 @@ export function ProductPage() {
         </Stack>
 
         {/* Info */}
-        <Stack gap="sm">
-          <Text c="dimmed" size="sm">{product.brandId.name}</Text>
-          <Title order={2}>{product.title}</Title>
+        <Stack gap="md">
+          <Box>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600} mb={4} style={{ letterSpacing: 0.5 }}>
+              {product.brandId.name}
+            </Text>
+            <Text fw={600} size="xl" style={{ lineHeight: 1.3 }}>{product.title}</Text>
+          </Box>
 
-          <Group>
-            <Text fw={700} size="2rem">{product.price.toLocaleString('uk-UA')} ₴</Text>
-            {product.stock === 0 ? (
-              <Badge color="red">Немає в наявності</Badge>
+          <Group align="center" gap="sm">
+            {product.hidePrice ? (
+              <Text size="xl" c="dimmed" fs="italic" fw={500}>Ціна уточнюється</Text>
             ) : (
-              <Badge color="green">В наявності: {product.stock} шт.</Badge>
+              <Text fw={700} size="2rem" style={{ lineHeight: 1 }}>
+                {product.price.toLocaleString('uk-UA')} ₴
+              </Text>
+            )}
+            {!product.hidePrice && (
+              effectiveStock === 0 ? (
+                <Badge color="red" variant="light" size="sm">Немає в наявності</Badge>
+              ) : (
+                <Badge color="green" variant="light" size="sm">В наявності</Badge>
+              )
             )}
           </Group>
 
-          <Text c="dimmed" size="sm" mt="xs">{product.description}</Text>
+          {product.description && (
+            <>
+              <Divider />
+              <Text size="sm" c="dimmed" style={{ lineHeight: 1.7 }}>{product.description}</Text>
+            </>
+          )}
 
-          {product.stock > 0 && (
-            <Group mt="md" align="flex-end">
-              <NumberInput
-                label="Кількість"
-                value={qty}
-                onChange={(v) => setQty(Number(v))}
-                min={1}
-                max={product.stock}
-                w={100}
-              />
-              <Button
-                leftSection={<IconShoppingCart size={16} />}
-                onClick={handleAddToCart}
-                loading={addToCart.isPending}
-                flex={1}
-              >
-                Додати до кошика
+          {product.hidePrice ? (
+            <>
+              <Divider />
+              <Group align="flex-end" gap="sm">
+                <NumberInput
+                  label="Кількість"
+                  value={qty}
+                  onChange={(v) => setQty(Number(v))}
+                  min={1}
+                  max={effectiveStock || 9999}
+                  w={100}
+                  size="sm"
+                  styles={{ input: { background: '#fff' } }}
+                />
+                <Text size="xs" c="dimmed" mb={6}>
+                  {product.unlimitedStock ? '+9999 шт.' : `max ${product.stock} шт.`}
+                </Text>
+              </Group>
+              <Group gap="sm">
+                <Button
+                  leftSection={<IconShoppingBag size={16} />}
+                  onClick={handleAddToCart}
+                  loading={addToCart.isPending}
+                  flex={1}
+                  color="dark"
+                  disabled={effectiveStock === 0}
+                >
+                  Додати до кошика (ціна уточнюється)
+                </Button>
+                <ActionIcon
+                  variant={isFavorite ? 'filled' : 'light'}
+                  color={isFavorite ? 'red' : 'gray'}
+                  size="lg"
+                  onClick={handleToggleFavorite}
+                  loading={toggleFavorite.isPending}
+                >
+                  {isFavorite ? <IconHeartFilled size={18} /> : <IconHeart size={18} />}
+                </ActionIcon>
+              </Group>
+            </>
+          ) : effectiveStock > 0 ? (
+            <>
+              <Divider />
+              <Group align="flex-end" gap="sm">
+                <NumberInput
+                  label="Кількість"
+                  value={qty}
+                  onChange={(v) => setQty(Number(v))}
+                  min={1}
+                  max={effectiveStock}
+                  w={100}
+                  size="sm"
+                  styles={{ input: { background: '#fff' } }}
+                />
+                <Text size="xs" c="dimmed" mb={6}>
+                  {product.unlimitedStock ? '+9999 шт.' : `max ${product.stock} шт.`}
+                </Text>
+              </Group>
+              <Group gap="sm">
+                <Button
+                  leftSection={<IconShoppingBag size={16} />}
+                  onClick={handleAddToCart}
+                  loading={addToCart.isPending}
+                  flex={1}
+                  color="dark"
+                >
+                  Додати до кошика
+                </Button>
+                <ActionIcon
+                  variant={isFavorite ? 'filled' : 'light'}
+                  color={isFavorite ? 'red' : 'gray'}
+                  size="lg"
+                  onClick={handleToggleFavorite}
+                  loading={toggleFavorite.isPending}
+                >
+                  {isFavorite ? <IconHeartFilled size={18} /> : <IconHeart size={18} />}
+                </ActionIcon>
+              </Group>
+            </>
+          ) : (
+            <Group gap="sm">
+              <Button variant="light" color="gray" flex={1} disabled>
+                Немає в наявності
               </Button>
               <ActionIcon
-                variant={isFavorite ? 'filled' : 'default'}
-                color={isFavorite ? 'red' : undefined}
+                variant={isFavorite ? 'filled' : 'light'}
+                color={isFavorite ? 'red' : 'gray'}
                 size="lg"
                 onClick={handleToggleFavorite}
                 loading={toggleFavorite.isPending}
@@ -135,6 +243,19 @@ export function ProductPage() {
               </ActionIcon>
             </Group>
           )}
+
+          <Box
+            p="sm"
+            style={{
+              background: 'var(--mantine-color-gray-0)',
+              borderRadius: 8,
+              border: '1px solid var(--mantine-color-gray-2)',
+            }}
+          >
+            {product.sku && (
+              <Text size="xs" c="dimmed">Артикул: <Text span size="xs" fw={500}>{product.sku}</Text></Text>
+            )}
+          </Box>
         </Stack>
       </SimpleGrid>
     </Stack>

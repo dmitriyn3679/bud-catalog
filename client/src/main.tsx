@@ -4,9 +4,12 @@ import { BrowserRouter } from 'react-router-dom';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MantineProvider } from '@mantine/core';
+import { DatesProvider } from '@mantine/dates';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import '@mantine/dates/styles.css';
+import 'dayjs/locale/uk';
 import App from './App';
 
 const queryClient = new QueryClient({
@@ -20,9 +23,11 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <MantineProvider>
-          <Notifications position="top-right" />
-          <App />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <DatesProvider settings={{ locale: 'uk', firstDayOfWeek: 1 }}>
+            <Notifications position="top-right" />
+            <App />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </DatesProvider>
         </MantineProvider>
       </QueryClientProvider>
     </BrowserRouter>

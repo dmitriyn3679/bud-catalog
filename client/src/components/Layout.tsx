@@ -1,65 +1,123 @@
-import { Anchor, AppShell, Badge, Box, Burger, Group, Text, UnstyledButton } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { IconHeart, IconShoppingCart, IconUser } from '@tabler/icons-react';
+import {
+  AppShell,
+  Badge,
+  Box,
+  Group,
+  Text,
+  UnstyledButton,
+} from '@mantine/core';
+import {
+  IconHeart,
+  IconShoppingBag,
+  IconUser,
+  IconLogout,
+} from '@tabler/icons-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import { useCartCount } from '../features/cart/useCart';
 
+const NAV_LINK: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  color: 'var(--mantine-color-dark-6)',
+  textDecoration: 'none',
+  padding: '6px 8px',
+  borderRadius: 6,
+  transition: 'background 0.15s',
+};
+
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [opened, { toggle }] = useDisclosure();
   const { user, logout } = useAuth();
   const cartCount = useCartCount();
   const navigate = useNavigate();
 
   return (
-    <AppShell header={{ height: 60 }} padding="md">
+    <AppShell
+      header={{ height: 56 }}
+      padding={0}
+      styles={{
+        header: {
+          borderBottom: '1px solid var(--mantine-color-gray-2)',
+          background: '#fff',
+        },
+        main: {
+          background: 'var(--mantine-color-gray-0)',
+          minHeight: 'calc(100vh - 56px)',
+        },
+      }}
+    >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Anchor component={Link} to="/" fw={700} size="lg" c="dark" style={{ textDecoration: 'none' }}>
-              Catalog Shop
-            </Anchor>
-          </Group>
+        <Group h="100%" px={{ base: 'md', sm: 'xl' }} justify="space-between">
+          {/* Logo */}
+          <Text
+            component={Link}
+            to="/"
+            fw={700}
+            size="lg"
+            style={{ textDecoration: 'none', color: 'var(--mantine-color-dark-8)', letterSpacing: -0.5 }}
+          >
+            BUD-CATALOG
+          </Text>
 
-          <Group gap="sm">
-            <UnstyledButton component={Link} to="/favorites">
-              <IconHeart size={22} />
-            </UnstyledButton>
+          {/* Nav */}
+          <Group gap={4}>
+            <Box
+              component={Link}
+              to="/favorites"
+              style={NAV_LINK}
+            >
+              <IconHeart size={20} stroke={1.8} />
+            </Box>
 
-            <Box pos="relative" component={Link} to="/cart" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-              <IconShoppingCart size={22} />
+            <Box
+              component={Link}
+              to="/cart"
+              style={{ ...NAV_LINK, position: 'relative' }}
+            >
+              <IconShoppingBag size={20} stroke={1.8} />
               {cartCount > 0 && (
-                <Badge size="xs" pos="absolute" top={-6} right={-8} circle>
+                <Badge
+                  size="xs"
+                  pos="absolute"
+                  top={2}
+                  right={2}
+                  circle
+                  styles={{ root: { fontSize: 10, minWidth: 16, height: 16, padding: 0 } }}
+                >
                   {cartCount}
                 </Badge>
               )}
             </Box>
 
             {user ? (
-              <Group gap="xs">
-                <UnstyledButton component={Link} to="/profile">
-                  <IconUser size={22} />
-                </UnstyledButton>
-                <Text
-                  size="sm"
-                  c="dimmed"
-                  style={{ cursor: 'pointer' }}
+              <>
+                <Box component={Link} to="/profile" style={NAV_LINK}>
+                  <IconUser size={20} stroke={1.8} />
+                  <Text size="sm" visibleFrom="sm">{user.name.split(' ')[0]}</Text>
+                </Box>
+                <UnstyledButton
+                  style={{ ...NAV_LINK, color: 'var(--mantine-color-gray-5)' }}
                   onClick={() => { logout(); navigate('/'); }}
                 >
-                  Вийти
-                </Text>
-              </Group>
+                  <IconLogout size={18} stroke={1.8} />
+                </UnstyledButton>
+              </>
             ) : (
-              <Anchor component={Link} to="/login" size="sm">
-                Увійти
-              </Anchor>
+              <Box component={Link} to="/login" style={NAV_LINK}>
+                <IconUser size={20} stroke={1.8} />
+                <Text size="sm">Увійти</Text>
+              </Box>
             )}
           </Group>
         </Group>
       </AppShell.Header>
 
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        <Box px={{ base: 'md', sm: 'xl' }} py="lg" maw={1280} mx="auto">
+          {children}
+        </Box>
+      </AppShell.Main>
     </AppShell>
   );
 }

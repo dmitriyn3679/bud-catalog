@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from './productsApi';
-import type { ProductFormData } from './productsApi';
+import type { BulkUpdatePayload, ProductFormData } from './productsApi';
 
-export function useAdminProducts(search?: string, page = 1) {
+export function useAdminProducts(params?: { search?: string; page?: number; brand?: string; category?: string }) {
+  const { search, page = 1, brand, category } = params ?? {};
   return useQuery({
-    queryKey: ['admin-products', search, page],
-    queryFn: () => productsApi.getAll({ search, page, limit: 20 }),
+    queryKey: ['admin-products', search, page, brand, category],
+    queryFn: () => productsApi.getAll({ search, page, limit: 20, brand, category }),
     placeholderData: (prev) => prev,
   });
 }
@@ -66,5 +67,14 @@ export function useDeleteImage(id: string) {
   return useMutation({
     mutationFn: (publicId: string) => productsApi.deleteImage(id, publicId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-product', id] }),
+  });
+}
+
+export function useBulkUpdateProducts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, updates }: { ids: string[]; updates: BulkUpdatePayload }) =>
+      productsApi.bulkUpdate(ids, updates),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-products'] }),
   });
 }

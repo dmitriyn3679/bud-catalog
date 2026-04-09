@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/AuthProvider';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
@@ -33,6 +33,8 @@ export default function App() {
         <Route path="/checkout" element={<Protected><CheckoutPage /></Protected>} />
         <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
         <Route path="/profile/orders/:orderId" element={<Protected><ProfilePage /></Protected>} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   );

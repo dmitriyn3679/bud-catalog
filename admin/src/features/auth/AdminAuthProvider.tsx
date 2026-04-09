@@ -5,7 +5,7 @@ import { AdminAuthContext } from './useAdminAuth';
 
 async function tryRestoreSession(): Promise<{ token: string; user: User } | null> {
   try {
-    const { data } = await api.post<{ accessToken: string }>('/auth/refresh');
+    const { data } = await api.post<{ accessToken: string }>('/admin/auth/refresh');
     setAccessToken(data.accessToken);
     const me = await api.get<User>('/users/me');
     if (me.data.role !== 'admin') return null;
@@ -29,14 +29,14 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data } = await api.post<{ accessToken: string; user: User }>('/auth/login', { email, password });
+    const { data } = await api.post<{ accessToken: string; user: User }>('/admin/auth/login', { email, password });
     if (data.user.role !== 'admin') throw new Error('Access denied');
     setAccessToken(data.accessToken);
     setUser(data.user);
   }, []);
 
   const logout = useCallback(async () => {
-    await api.post('/auth/logout');
+    await api.post('/admin/auth/logout');
     setAccessToken(null);
     setUser(null);
   }, []);

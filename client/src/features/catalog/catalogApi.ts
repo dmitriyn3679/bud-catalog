@@ -1,10 +1,13 @@
 import { api } from '../../api/axios';
 import type { Brand, Category, Paginated, Product } from '../../types';
 
+export type SortOption = 'recommended' | 'price_asc' | 'price_desc';
+
 export interface ProductFilters {
   category?: string;
   brand?: string;
   search?: string;
+  sort?: SortOption;
   page?: number;
   limit?: number;
 }

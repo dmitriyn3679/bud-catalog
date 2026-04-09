@@ -5,8 +5,12 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "create-admin": "tsx src/scripts/createAdmin.ts",
+    "create-admin:prod": "node dist/scripts/createAdmin.js",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -14,10 +18,13 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "multer": "^2.0.1",
+    "pdfmake": "^0.3.7",
+    "roboto-fontface": "^0.10.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -28,7 +35,9 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.7",
+    "@vitest/coverage-v8": "^4.1.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.2"
   }
 }

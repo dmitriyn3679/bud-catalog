@@ -17,5 +17,7 @@ const createOrderSchema = z.object({
 });
 
 orderRouter.post('/', validate(createOrderSchema), asyncHandler(controller.createOrder));
+orderRouter.post('/:id/reorder', asyncHandler(controller.reorder));
 orderRouter.get('/', asyncHandler(controller.getUserOrders));
+orderRouter.get('/:id/invoice', asyncHandler(controller.downloadInvoice));
 orderRouter.get('/:id', asyncHandler(controller.getUserOrderById));

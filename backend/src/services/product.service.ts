@@ -1,75 +1,32 @@
 import { Product } from '../models/Product';
-import { Category } from '../models/Category';
-import { User } from '../models/User';
 import { AppError } from '../middlewares/errorHandler';
 import { getDescendantIds } from './category.service';
-import { getMarkupMap } from './userMarkup.service';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/upload';
+import { applyUserPricing, type PricedProduct } from '../utils/pricing';
+
+export type SortOption = 'recommended' | 'price_asc' | 'price_desc';
 
 export interface ProductFilters {
   category?: string;
   brand?: string;
   search?: string;
+  sort?: SortOption;
   page?: number;
   limit?: number;
 }
 
-function round2(n: number) {
-  return Math.round(n * 100) / 100;
-}
-
-type RawProduct = Record<string, unknown> & {
-  purchasePrice: number;
-  price: number;
-  categoryId: { _id: unknown } | unknown;
-};
-
-async function applyUserPricing(products: RawProduct[], userId?: string): Promise<Record<string, unknown>[]> {
-  // Build parentId lookup for category inheritance
-  const categories = await Category.find({}).select('_id parentId').lean();
-  const parentMap = new Map<string, string | null>();
-  for (const c of categories) {
-    parentMap.set(c._id.toString(), c.parentId?.toString() ?? null);
+function buildSort(sort: SortOption | undefined, hasSearch: boolean): Record<string, unknown> {
+  if (hasSearch) return { score: { $meta: 'textScore' } };
+  switch (sort) {
+    case 'price_asc':  return { price: 1 };
+    case 'price_desc': return { price: -1 };
+    case 'recommended':
+    default:           return { isPromo: -1, createdAt: -1 };
   }
-
-  let markupMap = new Map<string, number>();
-  let globalMarkup: number | undefined;
-
-  if (userId) {
-    const [map, user] = await Promise.all([
-      getMarkupMap(userId),
-      User.findById(userId).select('globalMarkupPercent').lean(),
-    ]);
-    markupMap = map;
-    globalMarkup = user?.globalMarkupPercent;
-  }
-
-  return products.map((product) => {
-    const catId =
-      product.categoryId && typeof product.categoryId === 'object' && '_id' in (product.categoryId as object)
-        ? String((product.categoryId as { _id: unknown })._id)
-        : String(product.categoryId);
-
-    const parentId = parentMap.get(catId) ?? null;
-
-    let price = product.price;
-
-    if (markupMap.has(catId)) {
-      price = round2(product.purchasePrice * (1 + markupMap.get(catId)! / 100));
-    } else if (parentId && markupMap.has(parentId)) {
-      price = round2(product.purchasePrice * (1 + markupMap.get(parentId)! / 100));
-    } else if (globalMarkup !== undefined) {
-      price = round2(product.purchasePrice * (1 + globalMarkup / 100));
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { purchasePrice, ...rest } = product;
-    return { ...rest, price };
-  });
 }
 
 export async function getAll(filters: ProductFilters, userId?: string) {
-  const { category, brand, search, page = 1, limit = 20 } = filters;
+  const { category, brand, search, sort, page = 1, limit = 20 } = filters;
   const query: Record<string, unknown> = { isActive: true };
 
   if (category) {
@@ -85,10 +42,10 @@ export async function getAll(filters: ProductFilters, userId?: string) {
       .select('+purchasePrice')
       .populate('categoryId', 'name slug')
       .populate('brandId', 'name slug')
-      .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
+      .sort(buildSort(sort, !!search))
       .skip(skip)
       .limit(limit)
-      .lean() as Promise<RawProduct[]>,
+      .lean() as Promise<PricedProduct[]>,
     Product.countDocuments(query),
   ]);
 
@@ -101,7 +58,7 @@ export async function getById(id: string, userId?: string) {
     .select('+purchasePrice')
     .populate('categoryId', 'name slug')
     .populate('brandId', 'name slug')
-    .lean() as RawProduct | null;
+    .lean() as PricedProduct | null;
 
   if (!raw) throw new AppError('Product not found', 404);
 
@@ -110,6 +67,7 @@ export async function getById(id: string, userId?: string) {
 }
 
 export interface ProductCreateData {
+  sku?: string;
   title: string;
   description: string;
   price: number;
@@ -118,6 +76,9 @@ export interface ProductCreateData {
   brandId: string;
   stock: number;
   isActive?: boolean;
+  isPromo?: boolean;
+  unlimitedStock?: boolean;
+  hidePrice?: boolean;
 }
 
 export async function create(data: ProductCreateData) {
@@ -174,6 +135,36 @@ export async function getByIdAdmin(id: string) {
   return product;
 }
 
+export interface BulkUpdateData {
+  markupPercent?: number;
+  isActive?: boolean;
+  isPromo?: boolean;
+  hidePrice?: boolean;
+  unlimitedStock?: boolean;
+}
+
+export async function bulkUpdate(ids: string[], updates: BulkUpdateData) {
+  if (!ids.length) return;
+  const { markupPercent, ...boolFields } = updates;
+  const ops: Promise<unknown>[] = [];
+
+  if (Object.keys(boolFields).length) {
+    ops.push(Product.updateMany({ _id: { $in: ids } }, { $set: boolFields }));
+  }
+
+  if (markupPercent !== undefined) {
+    const factor = 1 + markupPercent / 100;
+    ops.push(
+      Product.updateMany(
+        { _id: { $in: ids } },
+        [{ $set: { price: { $round: [{ $multiply: ['$purchasePrice', factor] }, 2] } } }],
+      ),
+    );
+  }
+
+  await Promise.all(ops);
+}
+
 export async function getAllAdmin(filters: ProductFilters) {
   const { category, brand, search, page = 1, limit = 20 } = filters;
   const query: Record<string, unknown> = {};
@@ -191,7 +182,7 @@ export async function getAllAdmin(filters: ProductFilters) {
       .select('+purchasePrice')
       .populate('categoryId', 'name slug')
       .populate('brandId', 'name slug')
-      .sort(search ? { score: { $meta: 'textScore' } } : { createdAt: -1 })
+      .sort(search ? { score: { $meta: 'textScore' } } : { isPromo: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),

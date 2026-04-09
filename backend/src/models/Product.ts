@@ -6,6 +6,7 @@ export interface IProductImage {
 }
 
 export interface IProduct extends Document {
+  sku: string;
   title: string;
   description: string;
   price: number;
@@ -15,10 +16,14 @@ export interface IProduct extends Document {
   brandId: Types.ObjectId;
   stock: number;
   isActive: boolean;
+  isPromo: boolean;
+  unlimitedStock: boolean;
+  hidePrice: boolean;
 }
 
 const productSchema = new Schema<IProduct>(
   {
+    sku: { type: String, trim: true, default: '' },
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
@@ -33,6 +38,9 @@ const productSchema = new Schema<IProduct>(
     brandId: { type: Schema.Types.ObjectId, ref: 'Brand', required: true },
     stock: { type: Number, required: true, min: 0, default: 0 },
     isActive: { type: Boolean, default: true },
+    isPromo: { type: Boolean, default: false },
+    unlimitedStock: { type: Boolean, default: false },
+    hidePrice: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
@@ -41,5 +49,6 @@ productSchema.index({ title: 'text', description: 'text' });
 productSchema.index({ categoryId: 1 });
 productSchema.index({ brandId: 1 });
 productSchema.index({ isActive: 1, price: 1 });
+productSchema.index({ isActive: 1, isPromo: -1, createdAt: -1 });
 
 export const Product = mongoose.model<IProduct>('Product', productSchema);

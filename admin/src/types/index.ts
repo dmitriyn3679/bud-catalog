@@ -24,6 +24,7 @@ export interface BrandRef {
 
 export interface AdminProduct {
   _id: string;
+  sku: string;
   title: string;
   description: string;
   price: number;
@@ -33,6 +34,9 @@ export interface AdminProduct {
   brandId: BrandRef;
   stock: number;
   isActive: boolean;
+  isPromo: boolean;
+  unlimitedStock: boolean;
+  hidePrice: boolean;
   createdAt: string;
 }
 
@@ -50,12 +54,19 @@ export interface Brand {
   slug: string;
 }
 
+export type OrderItemChangeType = 'modified' | 'removed' | 'added';
+
 export interface OrderItem {
   productId: string;
   title: string;
+  sku?: string;
   price: number;
   purchasePrice: number;
+  actualPurchasePrice?: number;
+  hidePrice?: boolean;
   quantity: number;
+  originalQuantity?: number;
+  changeType?: OrderItemChangeType;
 }
 
 export interface AdminOrder {
@@ -64,6 +75,7 @@ export interface AdminOrder {
   items: OrderItem[];
   total: number;
   status: 'pending' | 'processing' | 'delivered' | 'cancelled';
+  isPaid: boolean;
   deliveryAddress: string;
   note?: string;
   createdAt: string;
@@ -87,7 +99,20 @@ export interface AdminUser {
   address: string;
   phone?: string;
   globalMarkupPercent?: number;
+  isSystemRetail?: boolean;
+  isBlocked?: boolean;
   createdAt: string;
+  stats: {
+    orderCount: number;
+    totalAmount: number;
+    avgMarkupPercent: number | null;
+  };
+}
+
+export interface RetailUser {
+  _id: string;
+  name: string;
+  isSystemRetail: boolean;
 }
 
 export interface UserMarkup {

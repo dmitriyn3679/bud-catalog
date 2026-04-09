@@ -22,7 +22,17 @@ export const usersApi = {
     return res.data;
   },
 
+  deleteGlobalMarkup: async (userId: string): Promise<AdminUser> => {
+    const res = await api.delete<AdminUser>(`/admin/users/${userId}/global-markup`);
+    return res.data;
+  },
+
   deleteCategoryMarkup: async (userId: string, categoryId: string): Promise<void> => {
     await api.delete(`/admin/users/${userId}/markups/${categoryId}`);
+  },
+
+  toggleBlock: async (userId: string): Promise<{ isBlocked: boolean }> => {
+    const res = await api.patch<{ isBlocked: boolean }>(`/admin/users/${userId}/block`);
+    return res.data;
   },
 };

@@ -26,7 +26,7 @@ export async function uploadToCloudinary(
         resolve({ url: result.secure_url, publicId: result.public_id });
       },
     );
-    Readable.from(buffer).pipe(stream);
+    Readable.from(Buffer.from(buffer)).pipe(stream);
   });
 }
 

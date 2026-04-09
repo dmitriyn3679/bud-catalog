@@ -1,23 +1,25 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  secure: isProd,
+  sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
   maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password, name, shopName, city, address } = req.body;
-  const { tokens, user } = await authService.register(email, password, { name, shopName, city, address });
+  const { email, password, name, phone, shopName, city, address } = req.body;
+  const { tokens, user } = await authService.register(password, { name, email, phone, shopName, city, address });
   res.cookie('refreshToken', tokens.refreshToken, REFRESH_COOKIE_OPTIONS);
   res.status(201).json({ accessToken: tokens.accessToken, user });
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const { tokens, user } = await authService.login(email, password);
+  const { login, password } = req.body;
+  const { tokens, user } = await authService.login(login, password);
   res.cookie('refreshToken', tokens.refreshToken, REFRESH_COOKIE_OPTIONS);
   res.json({ accessToken: tokens.accessToken, user });
 };

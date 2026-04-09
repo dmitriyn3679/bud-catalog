@@ -5,6 +5,8 @@ import { getDescendantIds } from './category.service';
 interface StatsFilters {
   categoryId?: string;
   productId?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 interface StatsResult {
@@ -18,6 +20,17 @@ interface StatsResult {
 
 export async function getStats(filters: StatsFilters): Promise<StatsResult> {
   const matchStage: Record<string, unknown> = { status: 'delivered' };
+
+  if (filters.dateFrom || filters.dateTo) {
+    const range: Record<string, Date> = {};
+    if (filters.dateFrom) range.$gte = new Date(filters.dateFrom);
+    if (filters.dateTo) {
+      const to = new Date(filters.dateTo);
+      to.setHours(23, 59, 59, 999);
+      range.$lte = to;
+    }
+    matchStage.createdAt = range;
+  }
   const itemMatchStage: Record<string, unknown> = {};
 
   if (filters.productId) {
@@ -46,7 +59,7 @@ export async function getStats(filters: StatsFilters): Promise<StatsResult> {
         orderIds: { $addToSet: '$_id' },
         totalUnitsSold: { $sum: '$items.quantity' },
         totalRevenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
-        totalCost: { $sum: { $multiply: ['$items.purchasePrice', '$items.quantity'] } },
+        totalCost: { $sum: { $multiply: [{ $ifNull: ['$items.actualPurchasePrice', '$items.purchasePrice'] }, '$items.quantity'] } },
       },
     },
     {

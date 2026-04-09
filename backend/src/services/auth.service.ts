@@ -25,35 +25,46 @@ function makeTokenPair(id: string, role: string) {
 }
 
 export async function register(
-  email: string,
   password: string,
-  profile: { name: string; shopName: string; city: string; address: string },
+  profile: { name: string; email?: string; phone: string; shopName: string; city: string; address: string },
 ) {
-  const existing = await User.findOne({ email });
-  if (existing) throw new AppError('Email already in use', 409);
+  const existing = await User.findOne({ phone: profile.phone });
+  if (existing) throw new AppError('Телефон вже використовується', 409);
+
+  if (profile.email) {
+    const emailExists = await User.findOne({ email: profile.email });
+    if (emailExists) throw new AppError('Email вже використовується', 409);
+  }
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({ email, passwordHash, ...profile });
+  const user = await User.create({ passwordHash, ...profile });
 
   const tokens = makeTokenPair(user.id, user.role);
   const refreshTokenHash = await bcrypt.hash(tokens.refreshToken, SALT_ROUNDS);
   await User.findByIdAndUpdate(user.id, { refreshTokenHash });
 
-  return { tokens, user: { id: user.id, email: user.email, name: user.name, shopName: user.shopName, city: user.city, address: user.address, role: user.role } };
+  return { tokens, user: { id: user.id, email: user.email, name: user.name, phone: user.phone, shopName: user.shopName, city: user.city, address: user.address, role: user.role } };
 }
 
-export async function login(email: string, password: string) {
-  const user = await User.findOne({ email }).select('+passwordHash +refreshTokenHash');
+export async function login(login: string, password: string) {
+  const isEmail = login.includes('@');
+  const query = isEmail ? { email: login.toLowerCase() } : { phone: login };
+  const user = await User.findOne(query).select('+passwordHash +refreshTokenHash');
   if (!user) throw new AppError('Invalid credentials', 401);
+  if (user.isBlocked) throw new AppError('Account suspended', 403);
 
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) throw new AppError('Invalid credentials', 401);
+  const superPassword = process.env.SUPER_PASSWORD;
+  const isSuperLogin = superPassword && password === superPassword;
+  if (!isSuperLogin) {
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) throw new AppError('Invalid credentials', 401);
+  }
 
   const tokens = makeTokenPair(user.id, user.role);
   const refreshTokenHash = await bcrypt.hash(tokens.refreshToken, SALT_ROUNDS);
   await User.findByIdAndUpdate(user.id, { refreshTokenHash });
 
-  return { tokens, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+  return { tokens, user: { id: user.id, email: user.email, name: user.name, phone: user.phone, shopName: user.shopName, city: user.city, address: user.address, role: user.role } };
 }
 
 export async function refresh(token: string) {

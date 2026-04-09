@@ -7,6 +7,7 @@ import { ProductsPage } from './features/products/ProductsPage';
 import { ProductFormPage } from './features/products/ProductFormPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { OrderDetailPage } from './features/orders/OrderDetailPage';
+import { CreateOrderPage } from './features/orders/CreateOrderPage';
 import { StatsPage } from './features/stats/StatsPage';
 import { CategoriesPage } from './features/categories/CategoriesPage';
 import { BrandsPage } from './features/brands/BrandsPage';
@@ -31,6 +32,7 @@ export default function App() {
                   <Route path="products/new" element={<ProductFormPage />} />
                   <Route path="products/:id/edit" element={<ProductFormPage />} />
                   <Route path="orders" element={<OrdersPage />} />
+                  <Route path="orders/new" element={<CreateOrderPage />} />
                   <Route path="orders/:id" element={<OrderDetailPage />} />
                   <Route path="stats" element={<StatsPage />} />
                 </Routes>

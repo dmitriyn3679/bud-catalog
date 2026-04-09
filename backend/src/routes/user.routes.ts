@@ -11,7 +11,9 @@ const updateSchema = z.object({
   body: z.object({
     name: z.string().min(2).max(100).optional(),
     phone: z.string().max(20).optional(),
-    address: z.string().max(300).optional(),
+    shopName: z.string().min(2).max(200).optional(),
+    city: z.string().min(2).max(100).optional(),
+    address: z.string().min(5).max(300).optional(),
   }),
 });
 

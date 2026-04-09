@@ -36,6 +36,21 @@ const updateBodySchema = z.object({
   }),
 });
 
+const bulkUpdateSchema = z.object({
+  body: z.object({
+    ids: z.array(z.string().length(24)).min(1),
+    updates: z.object({
+      markupPercent: z.number().min(0).optional(),
+      isActive: z.boolean().optional(),
+      isPromo: z.boolean().optional(),
+      hidePrice: z.boolean().optional(),
+      unlimitedStock: z.boolean().optional(),
+    }).refine((obj) => Object.keys(obj).length > 0, { message: 'No updates provided' }),
+  }),
+});
+
+productRouter.patch('/bulk', authMiddleware, roleGuard('admin'), validate(bulkUpdateSchema), asyncHandler(controller.bulkUpdate));
+
 // Public routes (optionalAuth to apply per-user pricing when logged in)
 productRouter.get('/', optionalAuth, asyncHandler(controller.getAll));
 productRouter.get('/:id', optionalAuth, asyncHandler(controller.getById));

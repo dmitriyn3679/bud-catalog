@@ -17,9 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .refresh()
       .then(({ accessToken }) => {
         setAccessToken(accessToken);
-        // decode user from token payload
-        // fetch full user profile
-        import('../../api/axios').then(({ api }) =>
+        return import('../../api/axios').then(({ api }) =>
           api.get<User>('/users/me').then((r) => setUser(r.data)),
         );
       })
@@ -29,14 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { accessToken, user } = await authApi.login({ email, password });
+  const login = useCallback(async (login: string, password: string) => {
+    const { accessToken, user } = await authApi.login({ login, password });
     setAccessToken(accessToken);
     setUser(user);
   }, []);
 
-  const register = useCallback(async (email: string, password: string, name: string, shopName: string, city: string, address: string) => {
-    const { accessToken, user } = await authApi.register({ email, password, name, shopName, city, address });
+  const register = useCallback(async (password: string, name: string, shopName: string, city: string, address: string, email?: string, phone?: string) => {
+    const { accessToken, user } = await authApi.register({ email: email || undefined, phone: phone!, password, name, shopName, city, address });
     setAccessToken(accessToken);
     setUser(user);
   }, []);
@@ -47,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, setUser, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

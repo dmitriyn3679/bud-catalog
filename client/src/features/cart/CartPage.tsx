@@ -7,113 +7,190 @@ import {
   Group,
   Image,
   NumberInput,
-  Paper,
   Stack,
   Text,
-  Title,
 } from '@mantine/core';
+import { useDebouncedCallback } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash } from '@tabler/icons-react';
+import { IconTrash, IconShoppingBag } from '@tabler/icons-react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart, useUpdateCartItem, useRemoveCartItem } from './useCart';
 
-export function CartPage() {
-  const { data: cart, isLoading } = useCart();
+function CartItem({
+  item,
+}: {
+  item: {
+    productId: { _id: string; title: string; price: number; images: { url: string }[]; stock: number; unlimitedStock: boolean; hidePrice?: boolean };
+    quantity: number;
+  };
+}) {
+  const product = item.productId;
+  const effectiveStock = product.unlimitedStock ? 9999 : product.stock;
   const updateItem = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
+  const [qty, setQty] = useState<number>(item.quantity);
+
+  const sendUpdate = useDebouncedCallback(async (value: number) => {
+    const clamped = value < 1 ? 1 : value;
+    if (clamped !== qty) setQty(clamped);
+    try {
+      await updateItem.mutateAsync({ productId: product._id, quantity: clamped });
+    } catch {
+      notifications.show({ color: 'red', message: 'Недостатньо на складі' });
+    }
+  }, 500);
+
+  const handleChange = (value: number | string) => {
+    const num = Number(value);
+    if (isNaN(num) || num === 0) { sendUpdate(1); setQty(1); return; }
+    setQty(num);
+    sendUpdate(num);
+  };
+
+  return (
+    <Group align="flex-start" wrap="nowrap" gap="md">
+      <Box
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: 8,
+          overflow: 'hidden',
+          background: 'var(--mantine-color-gray-0)',
+          border: '1px solid var(--mantine-color-gray-2)',
+          flexShrink: 0,
+          padding: 4,
+        }}
+      >
+        <Image
+          src={product.images[0]?.url}
+          w="100%"
+          h="100%"
+          fit="contain"
+          fallbackSrc="https://placehold.co/72x72?text=?"
+        />
+      </Box>
+
+      <Box flex={1} style={{ overflow: 'hidden' }}>
+        <Text
+          fw={500}
+          size="sm"
+          lineClamp={2}
+          component={Link}
+          to={`/product/${product._id}`}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          {product.title}
+        </Text>
+        {product.hidePrice
+          ? <Text size="sm" c="dimmed" fs="italic" mt={4}>Ціна уточнюється</Text>
+          : <Text size="sm" fw={600} mt={4}>{product.price.toLocaleString('uk-UA')} ₴</Text>
+        }
+        <Text size="xs" c="dimmed" mt={2}>
+          Залишок: {product.unlimitedStock ? '+9999' : product.stock} шт.
+        </Text>
+      </Box>
+
+      <Group align="center" wrap="nowrap" gap="sm" style={{ flexShrink: 0 }}>
+        <NumberInput
+          value={qty}
+          onChange={handleChange}
+          min={1}
+          max={effectiveStock}
+          w={76}
+          size="sm"
+          styles={{ input: { background: '#fff', textAlign: 'center' } }}
+        />
+        <Text fw={600} w={80} ta="right" size="sm" style={{ whiteSpace: 'nowrap' }} c={product.hidePrice ? 'dimmed' : undefined}>
+          {product.hidePrice ? '—' : `${(product.price * qty).toLocaleString('uk-UA')} ₴`}
+        </Text>
+        <ActionIcon
+          color="gray"
+          variant="subtle"
+          size="sm"
+          onClick={() => removeItem.mutate(product._id)}
+          loading={removeItem.isPending}
+        >
+          <IconTrash size={15} />
+        </ActionIcon>
+      </Group>
+    </Group>
+  );
+}
+
+export function CartPage() {
+  const { data: cart, isLoading } = useCart();
   const navigate = useNavigate();
 
   if (isLoading) return null;
 
   const items = cart?.items ?? [];
-  const total = items.reduce((sum, item) => sum + item.productId.price * item.quantity, 0);
+  const hidePriceCount = items.filter((i) => i.productId.hidePrice).length;
+  const total = items.reduce((sum, item) => sum + (item.productId.hidePrice ? 0 : item.productId.price * item.quantity), 0);
+  const totalQty = items.reduce((sum, item) => sum + item.quantity, 0);
 
   if (!items.length) {
     return (
       <Center h={400}>
-        <Stack align="center" gap="sm">
-          <Text c="dimmed" size="lg">Кошик порожній</Text>
-          <Button component={Link} to="/" variant="light">До каталогу</Button>
+        <Stack align="center" gap="md">
+          <Box style={{ color: 'var(--mantine-color-gray-4)' }}>
+            <IconShoppingBag size={48} stroke={1} />
+          </Box>
+          <Text c="dimmed">Кошик порожній</Text>
+          <Button component={Link} to="/" variant="light" color="dark" size="sm">
+            Перейти до каталогу
+          </Button>
         </Stack>
       </Center>
     );
   }
 
-  const handleQtyChange = async (productId: string, qty: number) => {
-    try {
-      await updateItem.mutateAsync({ productId, quantity: qty });
-    } catch {
-      notifications.show({ color: 'red', message: 'Недостатньо на складі' });
-    }
-  };
-
-  const handleRemove = async (productId: string) => {
-    await removeItem.mutateAsync(productId);
-  };
-
   return (
-    <Stack maw={800} mx="auto">
-      <Title order={2}>Кошик</Title>
+    <Box maw={760} mx="auto">
+      <Text fw={600} size="xl" mb="lg">Кошик</Text>
 
-      <Stack gap="sm">
-        {items.map((item) => {
-          const product = item.productId;
-          return (
-            <Paper key={product._id} withBorder p="md" radius="md">
-              <Group align="flex-start" wrap="nowrap">
-                <Image
-                  src={product.images[0]?.url}
-                  w={80}
-                  h={80}
-                  radius="sm"
-                  fit="cover"
-                  fallbackSrc="https://placehold.co/80x80?text=?"
-                  style={{ flexShrink: 0 }}
-                />
-                <Box flex={1}>
-                  <Text fw={500} lineClamp={2} component={Link} to={`/product/${product._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    {product.title}
-                  </Text>
-                  <Text fw={700} mt={4}>{product.price.toLocaleString('uk-UA')} ₴</Text>
-                </Box>
-                <Group align="center" wrap="nowrap">
-                  <NumberInput
-                    value={item.quantity}
-                    onChange={(v) => handleQtyChange(product._id, Number(v))}
-                    min={1}
-                    max={product.stock}
-                    w={80}
-                    size="sm"
-                  />
-                  <Text fw={600} w={90} ta="right">
-                    {(product.price * item.quantity).toLocaleString('uk-UA')} ₴
-                  </Text>
-                  <ActionIcon
-                    color="red"
-                    variant="subtle"
-                    onClick={() => handleRemove(product._id)}
-                    loading={removeItem.isPending}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              </Group>
-            </Paper>
-          );
-        })}
-      </Stack>
-
-      <Divider />
-
-      <Group justify="space-between" align="center">
-        <Stack gap={2}>
-          <Text c="dimmed" size="sm">Разом ({items.length} товар{items.length > 1 ? 'и' : ''}):</Text>
-          <Text fw={700} size="xl">{total.toLocaleString('uk-UA')} ₴</Text>
+      <Box
+        style={{
+          background: '#fff',
+          border: '1px solid var(--mantine-color-gray-2)',
+          borderRadius: 12,
+          overflow: 'hidden',
+        }}
+      >
+        <Stack gap={0} px="lg" py="md">
+          {items.map((item, i) => (
+            <Box key={item.productId._id}>
+              <CartItem item={item} />
+              {i < items.length - 1 && <Divider my="md" />}
+            </Box>
+          ))}
         </Stack>
-        <Button size="md" onClick={() => navigate('/checkout')}>
-          Оформити замовлення
-        </Button>
-      </Group>
-    </Stack>
+
+        <Divider />
+
+        <Box px="lg" py="md">
+          <Group justify="space-between" align="center">
+            <Stack gap={2}>
+              <Text size="xs" c="dimmed">
+                {totalQty} товар{totalQty !== 1 ? (totalQty < 5 ? 'и' : 'ів') : ''}
+              </Text>
+              <Text fw={700} size="lg">
+                {hidePriceCount > 0
+                  ? total > 0 ? `${total.toLocaleString('uk-UA')} ₴ + ціна уточнюється` : 'Ціна уточнюється'
+                  : `${total.toLocaleString('uk-UA')} ₴`}
+              </Text>
+            </Stack>
+            <Button
+              size="md"
+              color="dark"
+              onClick={() => navigate('/checkout')}
+              style={{ minWidth: 200 }}
+            >
+              Оформити замовлення
+            </Button>
+          </Group>
+        </Box>
+      </Box>
+    </Box>
   );
 }

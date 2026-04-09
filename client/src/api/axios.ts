@@ -1,12 +1,14 @@
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
-// Access token stored in memory (not localStorage) for security
 let accessToken: string | null = null;
+let refreshPromise: Promise<string> | null = null;
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
@@ -26,9 +28,19 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !original._retry && !original.url?.includes('/auth/refresh')) {
       original._retry = true;
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-        setAccessToken(data.accessToken);
-        original.headers.Authorization = `Bearer ${data.accessToken}`;
+        if (!refreshPromise) {
+          refreshPromise = axios
+            .post<{ accessToken: string }>(`${BASE_URL}/auth/refresh`, {}, { withCredentials: true })
+            .then(({ data }) => {
+              setAccessToken(data.accessToken);
+              return data.accessToken;
+            })
+            .finally(() => {
+              refreshPromise = null;
+            });
+        }
+        const newToken = await refreshPromise;
+        original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch {
         setAccessToken(null);

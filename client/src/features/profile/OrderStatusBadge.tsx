@@ -10,5 +10,5 @@ const STATUS_MAP: Record<Order['status'], { label: string; color: string }> = {
 
 export function OrderStatusBadge({ status }: { status: Order['status'] }) {
   const { label, color } = STATUS_MAP[status] ?? { label: status, color: 'gray' };
-  return <Badge color={color}>{label}</Badge>;
+  return <Badge color={color} variant="light" size="sm">{label}</Badge>;
 }

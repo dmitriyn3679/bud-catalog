@@ -16,6 +16,11 @@ export function useCartCount(): number {
   return data?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 }
 
+export function useIsInCart(productId: string): boolean {
+  const { data } = useCart();
+  return data?.items.some((item) => item.productId._id === productId) ?? false;
+}
+
 export function useAddToCart() {
   const qc = useQueryClient();
   return useMutation({

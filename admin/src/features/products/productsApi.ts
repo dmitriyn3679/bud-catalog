@@ -1,6 +1,14 @@
 import { api } from '../../api/axios';
 import type { AdminProduct, Brand, Category, Paginated } from '../../types';
 
+export interface BulkUpdatePayload {
+  markupPercent?: number;
+  isActive?: boolean;
+  isPromo?: boolean;
+  hidePrice?: boolean;
+  unlimitedStock?: boolean;
+}
+
 export interface ProductFormData {
   title: string;
   description: string;
@@ -13,7 +21,7 @@ export interface ProductFormData {
 }
 
 export const productsApi = {
-  getAll: async (params?: { search?: string; page?: number; limit?: number }): Promise<Paginated<AdminProduct>> => {
+  getAll: async (params?: { search?: string; page?: number; limit?: number; brand?: string; category?: string }): Promise<Paginated<AdminProduct>> => {
     const res = await api.get<Paginated<AdminProduct>>('/products/admin/list', { params });
     return res.data;
   },
@@ -58,5 +66,9 @@ export const productsApi = {
   getBrands: async (): Promise<Brand[]> => {
     const res = await api.get<Brand[]>('/brands');
     return res.data;
+  },
+
+  bulkUpdate: async (ids: string[], updates: BulkUpdatePayload): Promise<void> => {
+    await api.patch('/products/bulk', { ids, updates });
   },
 };

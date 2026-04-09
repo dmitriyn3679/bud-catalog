@@ -7,16 +7,19 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
-import { IconSearch } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { statsApi } from './statsApi';
 import { useAdminCategories } from '../products/useProducts';
+import { DateRangeFilter } from '../../components/DateRangeFilter';
 import type { Category } from '../../types';
+
+function toIso(d: Date | string | null) {
+  if (!d) return undefined;
+  return new Date(d).toISOString().split('T')[0];
+}
 
 function flatCategories(cats: Category[]): { value: string; label: string }[] {
   return cats.flatMap((cat) => [
@@ -37,33 +40,19 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
 
 export function StatsPage() {
   const [categoryId, setCategoryId] = useState<string>('');
-  const [productSearch, setProductSearch] = useState('');
-  const [debouncedSearch] = useDebouncedValue(productSearch, 400);
-  const [productId, setProductId] = useState<string>('');
+  const [dateRange, setDateRange] = useState<[Date | string | null, Date | string | null]>([null, null]);
 
   const { data: categories = [] } = useAdminCategories();
   const categoryOptions = [{ value: '', label: 'Всі категорії' }, ...flatCategories(categories)];
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['admin-stats', categoryId, productId],
+    queryKey: ['admin-stats', categoryId, dateRange],
     queryFn: () => statsApi.getStats({
       categoryId: categoryId || undefined,
-      productId: productId || undefined,
+      dateFrom: toIso(dateRange[0]),
+      dateTo: toIso(dateRange[1]),
     }),
   });
-
-  // Search products for filter
-  const { data: productResults } = useQuery({
-    queryKey: ['products-search-stats', debouncedSearch],
-    queryFn: () => import('../../api/axios').then(({ api }) =>
-      api.get('/products/admin/list', { params: { search: debouncedSearch, limit: 10 } }).then((r) => r.data.items)
-    ),
-    enabled: debouncedSearch.length >= 2,
-  });
-
-  const productOptions = productResults
-    ? [{ value: '', label: 'Скасувати фільтр' }, ...productResults.map((p: { _id: string; title: string }) => ({ value: p._id, label: p.title }))]
-    : [];
 
   const fmt = (n: number) => n.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -71,32 +60,16 @@ export function StatsPage() {
     <Stack>
       <Title order={3}>Статистика</Title>
 
-      <Group>
+      <Group align="flex-end">
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <Select
           w={260}
           data={categoryOptions}
           value={categoryId}
-          onChange={(v) => { setCategoryId(v ?? ''); setProductId(''); }}
-          label="Фільтр по категорії"
+          onChange={(v) => setCategoryId(v ?? '')}
+          label="Категорія"
           clearable
         />
-        <Stack gap={4} flex={1} maw={340}>
-          <TextInput
-            label="Пошук товару для фільтру"
-            placeholder="Введіть назву..."
-            leftSection={<IconSearch size={16} />}
-            value={productSearch}
-            onChange={(e) => setProductSearch(e.currentTarget.value)}
-          />
-          {productOptions.length > 0 && (
-            <Select
-              data={productOptions}
-              value={productId}
-              onChange={(v) => setProductId(v ?? '')}
-              placeholder="Оберіть товар"
-            />
-          )}
-        </Stack>
       </Group>
 
       {isLoading ? (
@@ -124,7 +97,6 @@ export function StatsPage() {
             label="Прибуток"
             value={`${fmt(stats.totalProfit)} ₴`}
             color={stats.totalProfit >= 0 ? 'green' : 'red'}
-            sub={`${fmt(stats.avgMarkupPercent)}% середня націнка`}
           />
           <StatCard
             label="Середня націнка"

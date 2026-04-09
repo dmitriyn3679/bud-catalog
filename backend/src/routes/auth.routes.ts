@@ -9,7 +9,8 @@ export const authRouter = Router();
 
 const registerSchema = z.object({
   body: z.object({
-    email: z.string().email(),
+    phone: z.string().min(10).max(20),
+    email: z.string().email().optional().or(z.literal('')),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     name: z.string().min(2).max(100),
     shopName: z.string().min(2).max(200),
@@ -20,7 +21,7 @@ const registerSchema = z.object({
 
 const loginSchema = z.object({
   body: z.object({
-    email: z.string().email(),
+    login: z.string().min(1),
     password: z.string().min(1),
   }),
 });

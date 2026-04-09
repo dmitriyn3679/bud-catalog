@@ -30,10 +30,26 @@ export function useUpsertCategoryMarkup(userId: string) {
   });
 }
 
+export function useDeleteGlobalMarkup(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => usersApi.deleteGlobalMarkup(userId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+}
+
 export function useDeleteCategoryMarkup(userId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (categoryId: string) => usersApi.deleteCategoryMarkup(userId, categoryId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-user-markups', userId] }),
+  });
+}
+
+export function useToggleBlock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => usersApi.toggleBlock(userId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 }
