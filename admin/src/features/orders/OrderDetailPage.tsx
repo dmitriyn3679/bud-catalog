@@ -327,15 +327,15 @@ export function OrderDetailPage() {
 
   return (
     <Stack maw={960}>
-      <Group justify="space-between">
-        <Group>
+      <Group justify="space-between" wrap="wrap" gap="sm">
+        <Group wrap="wrap">
           <Button component={Link} to="/admin/orders" variant="subtle" leftSection={<IconArrowLeft size={16} />}>
             Назад
           </Button>
           <Title order={3}>Замовлення #{order._id.slice(-6).toUpperCase()}</Title>
           <OrderStatusBadge status={order.status} />
         </Group>
-        <Group gap="xs">
+        <Group gap="xs" wrap="wrap">
           <Button
             variant="light"
             color="gray"
@@ -357,7 +357,7 @@ export function OrderDetailPage() {
         </Group>
       </Group>
 
-      <Group align="flex-start" gap="xl">
+      <Group align="flex-start" gap="xl" wrap="wrap">
         {/* Customer info */}
         <Paper withBorder p="md" radius="md" flex={1}>
           <Title order={5} mb="sm">Клієнт</Title>
@@ -373,7 +373,7 @@ export function OrderDetailPage() {
         </Paper>
 
         {/* Status change */}
-        <Paper withBorder p="md" radius="md" w={220}>
+        <Paper withBorder p="md" radius="md" w={{ base: '100%', sm: 220 }}>
           <Title order={5} mb="sm">Змінити статус</Title>
           <Select
             data={STATUS_OPTIONS}
@@ -407,6 +407,7 @@ export function OrderDetailPage() {
       {/* Items — View mode */}
       {!editMode && (
         <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>
+          <Box style={{ overflowX: 'auto' }}>
           <Table withColumnBorders>
             <Table.Thead>
               <Table.Tr>
@@ -517,6 +518,7 @@ export function OrderDetailPage() {
               })}
             </Table.Tbody>
           </Table>
+          </Box>
 
           {isPricesDirty && (
             <Group p="sm" justify="flex-end" style={{ borderTop: '1px solid var(--mantine-color-gray-2)' }}>
@@ -553,7 +555,7 @@ export function OrderDetailPage() {
                     opacity: isRemoved ? 0.65 : 1,
                   }}
                 >
-                  <Group justify="space-between" wrap="nowrap">
+                  <Group justify="space-between" wrap="wrap" gap="xs">
                     <Text
                       size="sm"
                       fw={500}
@@ -561,6 +563,7 @@ export function OrderDetailPage() {
                       lineClamp={1}
                       td={isRemoved ? 'line-through' : undefined}
                       c={isRemoved ? 'dimmed' : undefined}
+                      style={{ minWidth: 120 }}
                     >
                       {item.title}
                     </Text>

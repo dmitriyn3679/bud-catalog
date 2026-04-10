@@ -159,7 +159,7 @@ export function CartPage() {
           overflow: 'hidden',
         }}
       >
-        <Stack gap={0} px="lg" py="md">
+        <Stack gap={0} px={{ base: 'sm', sm: 'lg' }} py="md">
           {items.map((item, i) => (
             <Box key={item.productId._id}>
               <CartItem item={item} />
@@ -170,8 +170,8 @@ export function CartPage() {
 
         <Divider />
 
-        <Box px="lg" py="md">
-          <Group justify="space-between" align="center">
+        <Box px={{ base: 'sm', sm: 'lg' }} py="md">
+          <Group justify="space-between" align="center" wrap="wrap" gap="sm">
             <Stack gap={2}>
               <Text size="xs" c="dimmed">
                 {totalQty} товар{totalQty !== 1 ? (totalQty < 5 ? 'и' : 'ів') : ''}
@@ -186,7 +186,7 @@ export function CartPage() {
               size="md"
               color="dark"
               onClick={() => navigate('/checkout')}
-              style={{ minWidth: 200 }}
+              w={{ base: '100%', xs: 'auto' }}
             >
               Оформити замовлення
             </Button>

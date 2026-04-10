@@ -62,10 +62,11 @@ export function StatsPage() {
     <Stack>
       <Title order={3}>Статистика</Title>
 
-      <Group align="flex-end">
+      <Group align="flex-end" wrap="wrap">
         <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <Select
-          w={260}
+          miw={200}
+          flex={1}
           data={categoryOptions}
           value={categoryId}
           onChange={(v) => setCategoryId(v ?? '')}

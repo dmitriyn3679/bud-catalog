@@ -1,4 +1,5 @@
-import { AppShell, Button, NavLink, Stack, Text, Title } from '@mantine/core';
+import { AppShell, Burger, Button, Group, NavLink, Stack, Text, Title } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
   IconChartBar,
   IconClipboardList,
@@ -24,14 +25,41 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [opened, { toggle, close }] = useDisclosure();
 
   const handleLogout = async () => {
     await logout();
     navigate('/admin/login');
   };
 
+  const handleNav = (href: string) => {
+    navigate(href);
+    close();
+  };
+
   return (
-    <AppShell navbar={{ width: 220, breakpoint: 'sm' }} padding="md">
+    <AppShell
+      navbar={{ width: 220, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      header={{ height: 56 }}
+      padding="md"
+    >
+      <AppShell.Header hiddenFrom="sm" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)', background: '#fff' }}>
+        <Group h="100%" px="md" justify="space-between">
+          <Group gap="sm">
+            <Burger opened={opened} onClick={toggle} size="sm" />
+            <Text
+              fw={700}
+              size="md"
+              style={{ letterSpacing: -0.5, color: 'var(--mantine-color-dark-8)' }}
+            >
+              BUD-CATALOG-ADMIN
+            </Text>
+          </Group>
+          <Text size="xs" c="dimmed" style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {user?.email}
+          </Text>
+        </Group>
+      </AppShell.Header>
       <AppShell.Navbar p="sm">
         <Stack h="100%" justify="space-between">
           <Stack gap={4}>
@@ -42,7 +70,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 label={label}
                 leftSection={<Icon size={18} />}
                 active={location.pathname.startsWith(href)}
-                onClick={() => navigate(href)}
+                onClick={() => handleNav(href)}
                 style={{ borderRadius: 8 }}
               />
             ))}

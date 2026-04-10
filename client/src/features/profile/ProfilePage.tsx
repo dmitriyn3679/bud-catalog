@@ -132,8 +132,8 @@ function OrdersTab() {
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--mantine-color-gray-4)')}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--mantine-color-gray-2)')}
             >
-              <Group justify="space-between" wrap="nowrap">
-                <Group gap="lg" wrap="nowrap">
+              <Group justify="space-between" wrap="wrap" gap="xs">
+                <Group gap="md" wrap="wrap">
                   <Stack gap={2}>
                     <Text size="xs" c="dimmed">Замовлення</Text>
                     <Text size="sm" fw={600}>#{order._id.slice(-6).toUpperCase()}</Text>
@@ -151,7 +151,7 @@ function OrdersTab() {
                     </Text>
                   </Stack>
                 </Group>
-                <Group gap="sm" wrap="nowrap">
+                <Group gap="sm" wrap="wrap">
                   <OrderStatusBadge status={order.status} />
                   {order.status !== 'cancelled' && (
                     <Badge size="sm" variant="light" color={order.isPaid ? 'green' : 'gray'}>
@@ -392,7 +392,7 @@ function PersonalInfoTab() {
           <Text size="xs" fw={600} c="dimmed" tt="uppercase" style={{ letterSpacing: 0.5 }}>
             Контактна інформація
           </Text>
-          <SimpleGrid cols={2} spacing="sm">
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
             <TextInput
               label="Ім'я"
               {...register('name')}
@@ -417,7 +417,7 @@ function PersonalInfoTab() {
             error={errors.shopName?.message}
             styles={{ input: { background: '#fff' } }}
           />
-          <SimpleGrid cols={2} spacing="sm">
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
             <TextInput
               label="Місто"
               {...register('city')}

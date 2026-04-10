@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Badge,
+  Box,
   Button,
   Group,
   Modal,
@@ -283,6 +284,7 @@ export function UsersPage() {
           />
         </Group>
 
+        <Box style={{ overflowX: 'auto' }}>
         <Table highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
@@ -367,6 +369,7 @@ export function UsersPage() {
             ))}
           </Table.Tbody>
         </Table>
+        </Box>
       </Stack>
 
       <Modal

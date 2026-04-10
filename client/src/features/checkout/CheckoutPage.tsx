@@ -79,7 +79,7 @@ export function CheckoutPage() {
     <Box maw={920} mx="auto">
       <Text fw={600} size="xl" mb="lg">Оформлення замовлення</Text>
 
-      <Group align="flex-start" gap="lg" wrap="nowrap">
+      <Group align="flex-start" gap="lg" wrap="wrap">
         {/* Form */}
         <Box
           flex={1}
@@ -116,7 +116,7 @@ export function CheckoutPage() {
 
         {/* Summary */}
         <Box
-          w={300}
+          w={{ base: '100%', sm: 300 }}
           p="xl"
           style={{
             flexShrink: 0,

@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Center,
   Group,
@@ -52,22 +53,22 @@ export function OrdersPage() {
 
   return (
     <Stack>
-      <Group justify="space-between" align="flex-end">
+      <Group justify="space-between" align="flex-end" wrap="wrap" gap="sm">
         <Title order={3}>Замовлення</Title>
-        <Group align="flex-end">
+        <Group align="flex-end" wrap="wrap" gap="sm">
           <DateRangeFilter
             value={dateRange}
             onChange={(v) => { setDateRange(v); setPage(1); }}
           />
           <Select
-            w={200}
+            miw={160}
             label="Статус"
             data={STATUS_OPTIONS}
             value={status}
             onChange={(v) => { setStatus(v ?? ''); setPage(1); }}
           />
           <Select
-            w={160}
+            miw={140}
             label="Оплата"
             data={[
               { value: '',       label: 'Всі' },
@@ -84,6 +85,7 @@ export function OrdersPage() {
         </Group>
       </Group>
 
+      <Box style={{ overflowX: 'auto' }}>
       <Table highlightOnHover withTableBorder>
         <Table.Thead>
           <Table.Tr>
@@ -133,6 +135,7 @@ export function OrdersPage() {
           })}
         </Table.Tbody>
       </Table>
+      </Box>
 
       {(data?.totalPages ?? 0) > 1 && (
         <Pagination total={data!.totalPages} value={page} onChange={setPage} />

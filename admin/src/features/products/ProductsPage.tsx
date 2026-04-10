@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Badge,
+  Box,
   Button,
   Center,
   Checkbox,
@@ -198,16 +199,18 @@ export function ProductsPage() {
         </Button>
       </Group>
 
-      <Group>
+      <Group wrap="wrap">
         <TextInput
-          w={280}
+          miw={200}
+          flex={1}
           placeholder="Пошук..."
           leftSection={<IconSearch size={16} />}
           value={search}
           onChange={(e) => resetFilters(() => setSearch(e.currentTarget.value))}
         />
         <Select
-          w={200}
+          miw={160}
+          flex={1}
           placeholder="Бренд"
           clearable
           data={brandOptions}
@@ -215,7 +218,8 @@ export function ProductsPage() {
           onChange={(v) => resetFilters(() => setBrand(v))}
         />
         <Select
-          w={220}
+          miw={180}
+          flex={1}
           placeholder="Категорія"
           clearable
           data={categoryOptions}
@@ -258,6 +262,7 @@ export function ProductsPage() {
         </Group>
       )}
 
+      <Box style={{ overflowX: 'auto' }}>
       <Table highlightOnHover withTableBorder>
         <Table.Thead>
           <Table.Tr>
@@ -268,7 +273,7 @@ export function ProductsPage() {
                 onChange={toggleAll}
               />
             </Table.Th>
-            <Table.Th>Назва</Table.Th>
+            <Table.Th miw={220}>Назва</Table.Th>
             <Table.Th>Артикул</Table.Th>
             <Table.Th>Ціна клієнта</Table.Th>
             <Table.Th>Закупівельна</Table.Th>
@@ -303,7 +308,7 @@ export function ProductsPage() {
                     onChange={() => toggleOne(p._id)}
                   />
                 </Table.Td>
-                <Table.Td maw={260}>
+                <Table.Td miw={220}>
                   <Group gap={6} wrap="nowrap" align="center">
                     <Text lineClamp={1} fw={500}>{p.title}</Text>
                     {p.isPromo && (
@@ -341,6 +346,7 @@ export function ProductsPage() {
           )}
         </Table.Tbody>
       </Table>
+      </Box>
 
       {(data?.totalPages ?? 0) > 1 && (
         <Pagination

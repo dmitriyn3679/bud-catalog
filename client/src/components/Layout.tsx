@@ -2,6 +2,7 @@ import {
   AppShell,
   Badge,
   Box,
+  Burger,
   Group,
   Text,
   UnstyledButton,
@@ -12,9 +13,10 @@ import {
   IconUser,
   IconLogout,
 } from '@tabler/icons-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
 import { useCartCount } from '../features/cart/useCart';
+import { useCatalogDrawer } from '../context/CatalogDrawerContext';
 
 const NAV_LINK: React.CSSProperties = {
   display: 'flex',
@@ -31,6 +33,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const cartCount = useCartCount();
   const navigate = useNavigate();
+  const location = useLocation();
+  const catalogDrawer = useCatalogDrawer();
+  const isCatalog = location.pathname === '/';
 
   return (
     <AppShell
@@ -49,6 +54,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
     >
       <AppShell.Header>
         <Group h="100%" px={{ base: 'md', sm: 'xl' }} justify="space-between">
+          {/* Burger — mobile catalog only */}
+          {isCatalog && (
+            <Burger
+              hiddenFrom="sm"
+              opened={catalogDrawer.opened}
+              onClick={catalogDrawer.opened ? catalogDrawer.close : catalogDrawer.open}
+              size="sm"
+            />
+          )}
+
           {/* Logo */}
           <Text
             component={Link}

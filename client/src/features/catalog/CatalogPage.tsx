@@ -4,6 +4,7 @@ import {
   Box,
   Card,
   Center,
+  Drawer,
   Grid,
   Group,
   Image,
@@ -27,6 +28,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCatalogDrawer } from '../../context/CatalogDrawerContext';
 import { useProducts, useCategories, useBrands } from './useCatalog';
 import { useToggleFavorite, useIsFavorite } from '../favorites/useFavorites';
 import { useAddToCart, useIsInCart, useRemoveCartItem } from '../cart/useCart';
@@ -80,7 +82,7 @@ function CategoryTree({
       {categories.map((cat) => (
         <Box key={cat._id}>
           <UnstyledButton
-            style={{ ...itemStyle(selected === cat._id), display: 'flex', justifyContent: 'space-between' }}
+            style={{ ...itemStyle(selected === cat._id), display: 'flex', justifyContent: 'space-between', gap: 6 }}
             onClick={() => {
               if (cat.children.length > 0) toggle(cat._id);
               onSelect(cat._id);
@@ -280,46 +282,87 @@ export function CatalogPage() {
     ...(brands ?? []).map((b) => ({ value: b._id, label: b.name })),
   ];
 
-  return (
-    <Grid gutter="lg">
-      {/* Sidebar */}
-      <Grid.Col span={{ base: 12, sm: 3, md: 2 }}>
-        <Box
-          p="md"
-          style={{
-            background: '#fff',
-            borderRadius: 10,
-            border: '1px solid var(--mantine-color-gray-2)',
-            position: 'sticky',
-            top: 72,
-          }}
-        >
-          <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="sm" style={{ letterSpacing: 0.5 }}>
-            Категорії
-          </Text>
-          {catsLoading ? (
-            <Stack gap={6}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} h={28} radius="sm" />
-              ))}
-            </Stack>
-          ) : (
-            <CategoryTree
-              categories={categories ?? []}
-              selected={category}
-              onSelect={(id) => setFilter('category', id === category ? '' : id)}
-            />
-          )}
-        </Box>
-      </Grid.Col>
+  const { opened: drawerOpened, close: closeDrawer } = useCatalogDrawer();
 
-      {/* Main */}
-      <Grid.Col span={{ base: 12, sm: 9, md: 10 }}>
-        <Stack gap="md">
+  const handleCategorySelect = (id: string) => {
+    setFilter('category', id === category ? '' : id);
+    closeDrawer();
+  };
+
+  const selectedCategoryName = categories?.flatMap((c) => [c, ...c.children]).find((c) => c._id === category)?.name;
+
+  const sidebarContent = (
+    <>
+      <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="sm" style={{ letterSpacing: 0.5 }}>
+        Категорії
+      </Text>
+      {catsLoading ? (
+        <Stack gap={6}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} h={28} radius="sm" />
+          ))}
+        </Stack>
+      ) : (
+        <CategoryTree
+          categories={categories ?? []}
+          selected={category}
+          onSelect={handleCategorySelect}
+        />
+      )}
+    </>
+  );
+
+  return (
+    <>
+      <Drawer
+        opened={drawerOpened}
+        onClose={closeDrawer}
+        title="Категорії"
+        size="xs"
+        hiddenFrom="sm"
+        styles={{ title: { fontWeight: 600 } }}
+      >
+        <CategoryTree
+          categories={categories ?? []}
+          selected={category}
+          onSelect={handleCategorySelect}
+        />
+      </Drawer>
+
+      <Box style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        {/* Sidebar — desktop only */}
+        <Box
+          w={200}
+          visibleFrom="sm"
+          style={{ flexShrink: 0 }}
+        >
+          <Box
+            p="md"
+            style={{
+              background: '#fff',
+              borderRadius: 10,
+              border: '1px solid var(--mantine-color-gray-2)',
+              position: 'sticky',
+              top: 72,
+            }}
+          >
+            {sidebarContent}
+          </Box>
+        </Box>
+
+        {/* Main */}
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Stack gap="md">
           {/* Filters */}
-          <Group wrap="nowrap">
+          {category && selectedCategoryName && (
+            <Badge hiddenFrom="sm" variant="light" color="dark" size="sm">
+              {selectedCategoryName}
+            </Badge>
+          )}
+          <Group wrap="wrap">
             <TextInput
               flex={1}
+              miw={160}
               placeholder="Пошук товарів..."
               leftSection={<IconSearch size={15} />}
               value={searchInput}
@@ -329,7 +372,7 @@ export function CatalogPage() {
               }}
             />
             <Select
-              w={160}
+              miw={140}
               placeholder="Бренд"
               data={brandOptions}
               value={brand}
@@ -340,7 +383,7 @@ export function CatalogPage() {
               }}
             />
             <Select
-              w={180}
+              miw={150}
               data={SORT_OPTIONS}
               value={sort}
               onChange={(v) => setFilter('sort', v ?? 'recommended')}
@@ -384,8 +427,9 @@ export function CatalogPage() {
               )}
             </>
           )}
-        </Stack>
-      </Grid.Col>
-    </Grid>
+          </Stack>
+        </Box>
+      </Box>
+    </>
   );
 }
