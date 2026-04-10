@@ -24,6 +24,8 @@ import {
   IconSearch,
   IconShoppingBag,
   IconCheck,
+  IconChevronRight,
+  IconChevronDown,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -80,20 +82,32 @@ function CategoryTree({
       </UnstyledButton>
       {categories.map((cat) => (
         <Box key={cat._id}>
-          <UnstyledButton
-            style={{ ...itemStyle(selected === cat._id), display: 'flex', justifyContent: 'space-between', gap: 6 }}
-            onClick={() => {
-              if (cat.children.length > 0) toggle(cat._id);
-              onSelect(cat._id);
-            }}
-          >
-            <span>{cat.name}</span>
+          <Box style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <UnstyledButton
+              style={{ ...itemStyle(selected === cat._id), flex: 1 }}
+              onClick={() => onSelect(cat._id)}
+            >
+              {cat.name}
+            </UnstyledButton>
             {cat.children.length > 0 && (
-              <Text size="xs" c="dimmed" style={{ lineHeight: '20px' }}>
-                {expanded.includes(cat._id) ? '−' : '+'}
-              </Text>
+              <UnstyledButton
+                onClick={() => toggle(cat._id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 6,
+                  color: 'var(--mantine-color-dark-4)',
+                  cursor: 'pointer',
+                }}
+              >
+                {expanded.includes(cat._id) ? <IconChevronDown size={20} /> : <IconChevronRight size={20} />}
+              </UnstyledButton>
             )}
-          </UnstyledButton>
+          </Box>
           {cat.children.length > 0 && expanded.includes(cat._id) && (
             <Stack gap={1} pl="xs">
               {cat.children.map((sub) => (
