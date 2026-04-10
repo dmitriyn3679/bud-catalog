@@ -119,7 +119,7 @@ export function ProductFormPage() {
       if (isEdit) {
         await updateProduct.mutateAsync(data);
       } else {
-        const created = await createProduct.mutateAsync(data);
+        const created = await createProduct.mutateAsync({ ...data, stock: data.stock ?? 0 });
         productId = created._id;
       }
       if (newFiles.length && productId) {
