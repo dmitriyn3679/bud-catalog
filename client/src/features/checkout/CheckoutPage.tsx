@@ -20,6 +20,7 @@ import { useCart } from '../cart/useCart';
 import { checkoutApi } from './checkoutApi';
 import { useAuth } from '../auth/useAuth';
 import { IconShoppingBag } from '@tabler/icons-react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const schema = z.object({
   deliveryAddress: z.string().min(5, 'Вкажіть адресу доставки'),
@@ -29,6 +30,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function CheckoutPage() {
+  usePageTitle('Оформлення замовлення');
   const { user } = useAuth();
   const { data: cart } = useCart();
   const navigate = useNavigate();

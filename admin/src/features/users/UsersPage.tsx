@@ -20,6 +20,7 @@ import { useState, useMemo } from 'react';
 import type { AdminUser, Category } from '../../types';
 import { useAdminUsers, useDeleteCategoryMarkup, useDeleteGlobalMarkup, useToggleBlock, useUpsertCategoryMarkup, useUpsertGlobalMarkup, useUserMarkups } from './useUsers';
 import { useAdminCategories } from '../categories/useCategories';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 function flattenCategories(tree: Category[]): { value: string; label: string }[] {
   const result: { value: string; label: string }[] = [];
@@ -206,6 +207,7 @@ function SortIcon({ col, sort }: { col: SortKey; sort: { key: SortKey | null; di
 }
 
 export function UsersPage() {
+  usePageTitle('Клієнти');
   const { data: users = [], isLoading } = useAdminUsers();
   const toggleBlock = useToggleBlock();
   const [blockingId, setBlockingId] = useState<string | null>(null);

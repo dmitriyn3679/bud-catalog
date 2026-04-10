@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from './useAdminAuth';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const schema = z.object({
   email: z.string().email('Невірний email'),
@@ -13,6 +14,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function AdminLoginPage() {
+  usePageTitle('Вхід');
   const { login } = useAdminAuth();
   const navigate = useNavigate();
 

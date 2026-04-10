@@ -16,6 +16,7 @@ import { IconTrash, IconShoppingBag } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart, useUpdateCartItem, useRemoveCartItem } from './useCart';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 function CartItem({
   item,
@@ -119,6 +120,7 @@ function CartItem({
 }
 
 export function CartPage() {
+  usePageTitle('Кошик');
   const { data: cart, isLoading } = useCart();
   const navigate = useNavigate();
 

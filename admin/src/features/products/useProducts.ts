@@ -54,11 +54,11 @@ export function useDeleteProduct() {
   });
 }
 
-export function useUploadImages(id: string) {
+export function useUploadImages() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (files: File[]) => productsApi.uploadImages(id, files),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-product', id] }),
+    mutationFn: ({ id, files }: { id: string; files: File[] }) => productsApi.uploadImages(id, files),
+    onSuccess: (_data, { id }) => qc.invalidateQueries({ queryKey: ['admin-product', id] }),
   });
 }
 

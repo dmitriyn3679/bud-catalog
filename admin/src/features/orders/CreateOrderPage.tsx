@@ -25,6 +25,7 @@ import { useCreateAdminOrder, useRetailUser } from './useOrders';
 import { useAdminCategories, useAdminProducts } from '../products/useProducts';
 import { useAdminUsers, useUserMarkups } from '../users/useUsers';
 import type { AdminProduct, Category, UserMarkup } from '../../types';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -119,6 +120,7 @@ function AddProductRow({
 // ─── CreateOrderPage ───────────────────────────────────────────────────────────
 
 export function CreateOrderPage() {
+  usePageTitle('Нове замовлення');
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [items, setItems] = useState<ItemRow[]>([]);

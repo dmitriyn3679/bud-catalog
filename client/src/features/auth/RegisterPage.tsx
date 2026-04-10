@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const schema = z.object({
   name: z.string().min(2, 'Мінімум 2 символи'),
@@ -23,6 +24,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function RegisterPage() {
+  usePageTitle('Реєстрація');
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
 

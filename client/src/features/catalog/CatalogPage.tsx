@@ -32,6 +32,7 @@ import { useToggleFavorite, useIsFavorite } from '../favorites/useFavorites';
 import { useAddToCart, useIsInCart, useRemoveCartItem } from '../cart/useCart';
 import type { Category } from '../../types';
 import type { SortOption } from './catalogApi';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'recommended', label: 'Рекомендовані' },
@@ -233,6 +234,7 @@ function ProductCard({ product }: { product: ProductType }) {
 const PAGE_SIZE = 20;
 
 export function CatalogPage() {
+  usePageTitle('Каталог');
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState(searchParams.get('search') ?? '');
   const [debouncedSearch] = useDebouncedValue(searchInput, 400);

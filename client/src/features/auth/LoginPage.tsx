@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const schema = z.object({
   login: z.string().min(1, 'Введіть email або телефон'),
@@ -14,6 +15,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export function LoginPage() {
+  usePageTitle('Вхід');
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

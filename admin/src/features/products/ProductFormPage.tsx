@@ -35,6 +35,7 @@ import {
   useDeleteImage,
 } from './useProducts';
 import type { Category } from '../../types';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const schema = z.object({
   sku: z.string().max(100).optional(),
@@ -44,11 +45,15 @@ const schema = z.object({
   purchasePrice: z.number({ invalid_type_error: 'Введіть число' }).min(0),
   categoryId: z.string().min(1, 'Оберіть категорію'),
   brandId: z.string().min(1, 'Оберіть бренд'),
-  stock: z.number().min(0),
+  stock: z.number().min(0).optional(),
   isActive: z.boolean(),
   isPromo: z.boolean(),
   unlimitedStock: z.boolean(),
   hidePrice: z.boolean(),
+}).superRefine((data, ctx) => {
+  if (!data.unlimitedStock && (data.stock === undefined || data.stock === null)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Вкажіть кількість', path: ['stock'] });
+  }
 });
 type FormData = z.infer<typeof schema>;
 
@@ -65,12 +70,13 @@ export function ProductFormPage() {
   const navigate = useNavigate();
 
   const { data: product, isLoading: productLoading } = useAdminProduct(id ?? '');
+  usePageTitle(isEdit ? (product?.title ? `Редагування: ${product.title}` : 'Редагування товару') : 'Новий товар');
   const { data: categories = [] } = useAdminCategories();
   const { data: brands = [] } = useAdminBrands();
 
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct(id ?? '');
-  const uploadImages = useUploadImages(id ?? '');
+  const uploadImages = useUploadImages();
   const deleteImage = useDeleteImage(id ?? '');
 
   const [newFiles, setNewFiles] = useState<File[]>([]);
@@ -117,7 +123,7 @@ export function ProductFormPage() {
         productId = created._id;
       }
       if (newFiles.length && productId) {
-        await uploadImages.mutateAsync(newFiles);
+        await uploadImages.mutateAsync({ id: productId, files: newFiles });
       }
       notifications.show({ color: 'green', message: isEdit ? 'Товар оновлено' : 'Товар створено' });
       navigate('/admin/products');
@@ -258,9 +264,10 @@ export function ProductFormPage() {
                   <NumberInput
                     label="Кількість на складі"
                     value={unlimitedStock ? 9999 : field.value}
-                    onChange={field.onChange}
+                    onChange={(v) => field.onChange(typeof v === 'number' ? v : undefined)}
                     min={0}
                     disabled={unlimitedStock}
+                    error={errors.stock?.message}
                   />
                 )}
               />
@@ -336,7 +343,10 @@ export function ProductFormPage() {
                   <Checkbox
                     label="Необмежена кількість (купівля не знімає залишок, клієнт бачить +9999)"
                     checked={field.value}
-                    onChange={field.onChange}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      if (e.currentTarget.checked) setValue('stock', 0, { shouldValidate: true });
+                    }}
                     color="blue"
                   />
                 )}

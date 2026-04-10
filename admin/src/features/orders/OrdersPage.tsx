@@ -17,6 +17,7 @@ import { useAdminOrders } from './useOrders';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { DateRangeFilter } from '../../components/DateRangeFilter';
 import type { AdminOrder } from '../../types';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: 'Всі замовлення' },
@@ -32,6 +33,7 @@ function toIso(d: Date | string | null) {
 }
 
 export function OrdersPage() {
+  usePageTitle('Замовлення');
   const navigate = useNavigate();
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);

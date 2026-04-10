@@ -28,6 +28,7 @@ import { useOrders, useOrderDetail, useUpdateProfile, useChangePassword, useReor
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { IconChevronRight, IconChevronLeft, IconX, IconRefresh, IconDownload } from '@tabler/icons-react';
 import { api } from '../../api/axios';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 type DateRange = [Date | null, Date | null];
 
@@ -507,6 +508,7 @@ function ChangePasswordTab() {
 // ─── ProfilePage ──────────────────────────────────────────────────────────────
 
 export function ProfilePage() {
+  usePageTitle('Профіль');
   const { orderId } = useParams<{ orderId?: string }>();
   const { user } = useAuth();
 

@@ -43,6 +43,7 @@ import {
   useBulkUpdateProducts,
   useDeleteProduct,
 } from './useProducts';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 type BulkActionType = 'markup' | 'hidePrice' | 'unlimitedStock' | 'isPromo' | 'isActive';
 
@@ -72,6 +73,7 @@ function flattenCategories(categories: Category[], depth = 0): { value: string; 
 }
 
 export function ProductsPage() {
+  usePageTitle('Товари');
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');

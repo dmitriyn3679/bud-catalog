@@ -13,8 +13,10 @@ import {
 import { IconHeartFilled, IconHeart } from '@tabler/icons-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFavorites, useToggleFavorite } from './useFavorites';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export function FavoritesPage() {
+  usePageTitle('Обране');
   const { data: products = [], isLoading } = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const navigate = useNavigate();

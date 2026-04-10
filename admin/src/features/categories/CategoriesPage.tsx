@@ -23,6 +23,7 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from './useCategories';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 interface FormState {
   name: string;
@@ -40,6 +41,7 @@ function toSlug(str: string) {
 }
 
 export function CategoriesPage() {
+  usePageTitle('Категорії');
   const { data: tree = [] } = useAdminCategories();
   const createMutation = useCreateCategory();
   const deleteMutation = useDeleteCategory();

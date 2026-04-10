@@ -20,6 +20,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useProduct } from './useCatalog';
 import { useAddToCart } from '../cart/useCart';
 import { useToggleFavorite, useIsFavorite } from '../favorites/useFavorites';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +31,7 @@ export function ProductPage() {
   const addToCart = useAddToCart();
   const toggleFavorite = useToggleFavorite();
   const isFavorite = useIsFavorite(id!);
+  usePageTitle(product?.title);
 
   if (isLoading) return <Center h={400}><Loader size="sm" /></Center>;
   if (isError || !product) return <Center h={400}><Text c="dimmed">Товар не знайдено</Text></Center>;

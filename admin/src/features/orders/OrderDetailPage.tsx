@@ -26,6 +26,7 @@ import { useAdminProducts } from '../products/useProducts';
 import { api } from '../../api/axios';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import type { AdminOrder, AdminProduct, OrderItem } from '../../types';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const STATUS_OPTIONS = [
   { value: 'pending',    label: 'Очікує' },
@@ -129,6 +130,7 @@ function AddProductRow({
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
+  usePageTitle(id ? `Замовлення #${id.slice(-6).toUpperCase()}` : 'Замовлення');
   const { data: order, isLoading } = useAdminOrder(id!);
   const updateStatus       = useUpdateOrderStatus(id!);
   const updateItems        = useUpdateOrderItems(id!);

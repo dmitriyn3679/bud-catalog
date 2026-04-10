@@ -15,6 +15,7 @@ import { statsApi } from './statsApi';
 import { useAdminCategories } from '../products/useProducts';
 import { DateRangeFilter } from '../../components/DateRangeFilter';
 import type { Category } from '../../types';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 function toIso(d: Date | string | null) {
   if (!d) return undefined;
@@ -39,6 +40,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string; 
 }
 
 export function StatsPage() {
+  usePageTitle('Статистика');
   const [categoryId, setCategoryId] = useState<string>('');
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
 

@@ -16,6 +16,7 @@ import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import type { Brand } from '../../types';
 import { useAdminBrands, useCreateBrand, useDeleteBrand, useUpdateBrand } from './useBrands';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 interface FormState {
   name: string;
@@ -32,6 +33,7 @@ function toSlug(str: string) {
 }
 
 export function BrandsPage() {
+  usePageTitle('Бренди');
   const { data: brands = [] } = useAdminBrands();
   const createMutation = useCreateBrand();
   const deleteMutation = useDeleteBrand();
