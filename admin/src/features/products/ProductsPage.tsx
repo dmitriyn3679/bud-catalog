@@ -33,14 +33,13 @@ import {
   IconTag,
   IconTrash,
 } from '@tabler/icons-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Category } from '../../types';
-import type { BulkUpdatePayload } from './productsApi';
+import { productsApi, type BulkUpdatePayload } from './productsApi';
 import {
   useAdminBrands,
   useAdminCategories,
-  useAdminProductIds,
   useAdminProducts,
   useBulkUpdateProducts,
   useDeleteProduct,
@@ -84,7 +83,7 @@ export function ProductsPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [fetchAllEnabled, setFetchAllEnabled] = useState(false);
+  const [isFetchingAll, setIsFetchingAll] = useState(false);
 
   // Bulk action modal state
   const [activeAction, setActiveAction] = useState<BulkActionType | null>(null);
@@ -98,17 +97,19 @@ export function ProductsPage() {
     category: category ?? undefined,
   });
 
-  const { data: allIds, isFetching: isFetchingAll } = useAdminProductIds(
-    { search: debouncedSearch || undefined, brand: brand ?? undefined, category: category ?? undefined },
-    fetchAllEnabled,
-  );
-
-  useEffect(() => {
-    if (allIds) {
-      setSelectedIds(new Set(allIds));
-      setFetchAllEnabled(false);
+  const fetchAndSelectAll = useCallback(async () => {
+    setIsFetchingAll(true);
+    try {
+      const ids = await productsApi.getAllIds({
+        search: debouncedSearch || undefined,
+        brand: brand ?? undefined,
+        category: category ?? undefined,
+      });
+      setSelectedIds(new Set(ids));
+    } finally {
+      setIsFetchingAll(false);
     }
-  }, [allIds]);
+  }, [debouncedSearch, brand, category]);
 
   const { data: brands } = useAdminBrands();
   const { data: categories } = useAdminCategories();
@@ -140,7 +141,7 @@ export function ProductsPage() {
     if (allSelectedGlobally) {
       setSelectedIds(new Set());
     } else {
-      setFetchAllEnabled(true);
+      fetchAndSelectAll();
     }
   };
 
