@@ -31,6 +31,15 @@ export const getById = async (req: Request<IdParam>, res: Response) => {
 };
 
 // Admin
+export const getAllAdminIds = async (req: Request, res: Response) => {
+  const ids = await productService.getAllAdminIds({
+    category: req.query.category as string | undefined,
+    brand: req.query.brand as string | undefined,
+    search: req.query.search as string | undefined,
+  });
+  res.json(ids);
+};
+
 export const getAllAdmin = async (req: Request, res: Response) => {
   const result = await productService.getAllAdmin(parseFilters(req.query));
   res.json(result);

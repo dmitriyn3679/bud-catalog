@@ -33,13 +33,14 @@ import {
   IconTag,
   IconTrash,
 } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Category } from '../../types';
 import type { BulkUpdatePayload } from './productsApi';
 import {
   useAdminBrands,
   useAdminCategories,
+  useAdminProductIds,
   useAdminProducts,
   useBulkUpdateProducts,
   useDeleteProduct,
@@ -83,6 +84,7 @@ export function ProductsPage() {
   const [category, setCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [fetchAllEnabled, setFetchAllEnabled] = useState(false);
 
   // Bulk action modal state
   const [activeAction, setActiveAction] = useState<BulkActionType | null>(null);
@@ -95,6 +97,18 @@ export function ProductsPage() {
     brand: brand ?? undefined,
     category: category ?? undefined,
   });
+
+  const { data: allIds, isFetching: isFetchingAll } = useAdminProductIds(
+    { search: debouncedSearch || undefined, brand: brand ?? undefined, category: category ?? undefined },
+    fetchAllEnabled,
+  );
+
+  useEffect(() => {
+    if (allIds) {
+      setSelectedIds(new Set(allIds));
+      setFetchAllEnabled(false);
+    }
+  }, [allIds]);
 
   const { data: brands } = useAdminBrands();
   const { data: categories } = useAdminCategories();
@@ -120,20 +134,13 @@ export function ProductsPage() {
   const products = data?.items ?? [];
   const allSelected = products.length > 0 && products.every((p) => selectedIds.has(p._id));
   const someSelected = products.some((p) => selectedIds.has(p._id)) && !allSelected;
+  const allSelectedGlobally = !!data?.total && selectedIds.size >= data.total;
 
   const toggleAll = () => {
-    if (allSelected) {
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        products.forEach((p) => next.delete(p._id));
-        return next;
-      });
+    if (allSelectedGlobally) {
+      setSelectedIds(new Set());
     } else {
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        products.forEach((p) => next.add(p._id));
-        return next;
-      });
+      setFetchAllEnabled(true);
     }
   };
 
@@ -269,7 +276,8 @@ export function ProductsPage() {
             <Table.Th w={36}>
               <Checkbox
                 checked={allSelected}
-                indeterminate={someSelected}
+                indeterminate={someSelected && !isFetchingAll}
+                disabled={isFetchingAll}
                 onChange={toggleAll}
               />
             </Table.Th>
@@ -356,7 +364,7 @@ export function ProductsPage() {
         <Pagination
           total={data!.totalPages}
           value={page}
-          onChange={(v) => { setPage(v); setSelectedIds(new Set()); }}
+          onChange={setPage}
         />
       )}
 

@@ -11,6 +11,18 @@ export function useAdminProducts(params?: { search?: string; page?: number; bran
   });
 }
 
+export function useAdminProductIds(
+  params: { search?: string; brand?: string; category?: string },
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ['admin-product-ids', params.search, params.brand, params.category],
+    queryFn: () => productsApi.getAllIds(params),
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
 export function useAdminProduct(id: string) {
   return useQuery({
     queryKey: ['admin-product', id],

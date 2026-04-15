@@ -168,6 +168,24 @@ export async function bulkUpdate(ids: string[], updates: BulkUpdateData) {
   await Promise.all(ops);
 }
 
+export async function getAllAdminIds(filters: Pick<ProductFilters, 'category' | 'brand' | 'search'>): Promise<string[]> {
+  const { category, brand, search } = filters;
+  const query: Record<string, unknown> = {};
+
+  if (category) {
+    const ids = await getDescendantIds(category);
+    query.categoryId = { $in: ids };
+  }
+  if (brand) query.brandId = brand;
+  if (search) {
+    const re = { $regex: search, $options: 'i' };
+    query.$or = [{ title: re }, { description: re }];
+  }
+
+  const products = await Product.find(query).select('_id').lean();
+  return products.map((p) => String(p._id));
+}
+
 export async function getAllAdmin(filters: ProductFilters) {
   const { category, brand, search, page = 1, limit = 20 } = filters;
   const query: Record<string, unknown> = {};

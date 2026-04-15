@@ -56,6 +56,7 @@ productRouter.get('/', optionalAuth, asyncHandler(controller.getAll));
 productRouter.get('/:id', optionalAuth, asyncHandler(controller.getById));
 
 // Admin routes
+productRouter.get('/admin/ids', authMiddleware, roleGuard('admin'), asyncHandler(controller.getAllAdminIds));
 productRouter.get('/admin/list', authMiddleware, roleGuard('admin'), asyncHandler(controller.getAllAdmin));
 productRouter.get('/admin/:id', authMiddleware, roleGuard('admin'), asyncHandler(controller.getByIdAdmin));
 productRouter.post('/', authMiddleware, roleGuard('admin'), validate(productBodySchema), asyncHandler(controller.create));

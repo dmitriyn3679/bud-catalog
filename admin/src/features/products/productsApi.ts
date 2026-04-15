@@ -68,6 +68,11 @@ export const productsApi = {
     return res.data;
   },
 
+  getAllIds: async (params?: { search?: string; brand?: string; category?: string }): Promise<string[]> => {
+    const res = await api.get<string[]>('/products/admin/ids', { params });
+    return res.data;
+  },
+
   bulkUpdate: async (ids: string[], updates: BulkUpdatePayload): Promise<void> => {
     await api.patch('/products/bulk', { ids, updates });
   },
