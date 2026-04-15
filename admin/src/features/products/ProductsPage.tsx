@@ -279,6 +279,7 @@ export function ProductsPage() {
             <Table.Th>Закупівельна</Table.Th>
             <Table.Th>Націнка</Table.Th>
             <Table.Th>Склад</Table.Th>
+            <Table.Th>Замовлень</Table.Th>
             <Table.Th>Статус</Table.Th>
             <Table.Th />
           </Table.Tr>
@@ -286,13 +287,13 @@ export function ProductsPage() {
         <Table.Tbody>
           {isLoading ? (
             <Table.Tr>
-              <Table.Td colSpan={9}>
+              <Table.Td colSpan={10}>
                 <Center py="xl"><Text c="dimmed">Завантаження...</Text></Center>
               </Table.Td>
             </Table.Tr>
           ) : !products.length ? (
             <Table.Tr>
-              <Table.Td colSpan={9}>
+              <Table.Td colSpan={10}>
                 <Center py="xl"><Text c="dimmed">Товарів не знайдено</Text></Center>
               </Table.Td>
             </Table.Tr>
@@ -326,6 +327,9 @@ export function ProductsPage() {
                   {markup(p.price, p.purchasePrice)}
                 </Table.Td>
                 <Table.Td>{p.unlimitedStock ? '∞' : p.stock}</Table.Td>
+                <Table.Td>
+                  <Text size="sm">{p.orderCount ?? 0}</Text>
+                </Table.Td>
                 <Table.Td>
                   <Badge color={p.isActive ? 'green' : 'gray'} variant="light" styles={{ label: { overflow: 'visible' } }}>
                     {p.isActive ? 'Активний' : 'Прихований'}

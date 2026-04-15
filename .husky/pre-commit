@@ -1,0 +1,25 @@
+echo "⏳ Type checking client..."
+cd client && npx tsc -b --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ client: TypeScript errors. Fix them before committing."
+  exit 1
+fi
+cd ..
+
+echo "⏳ Type checking admin..."
+cd admin && npx tsc -b --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ admin: TypeScript errors. Fix them before committing."
+  exit 1
+fi
+cd ..
+
+echo "⏳ Type checking backend..."
+cd backend && npx tsc -b --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ backend: TypeScript errors. Fix them before committing."
+  exit 1
+fi
+cd ..
+
+echo "✅ All type checks passed."

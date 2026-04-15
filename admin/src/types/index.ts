@@ -37,6 +37,7 @@ export interface AdminProduct {
   isPromo: boolean;
   unlimitedStock: boolean;
   hidePrice: boolean;
+  orderCount: number;
   createdAt: string;
 }
 

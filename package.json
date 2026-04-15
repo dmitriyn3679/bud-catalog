@@ -18,9 +18,11 @@
     "build:admin": "npm run build --workspace=admin",
     "test": "vitest run --config backend/vitest.config.ts",
     "test:watch": "vitest --config backend/vitest.config.ts",
-    "test:coverage": "vitest run --config backend/vitest.config.ts --coverage"
+    "test:coverage": "vitest run --config backend/vitest.config.ts --coverage",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "husky": "^9.1.7"
   }
 }

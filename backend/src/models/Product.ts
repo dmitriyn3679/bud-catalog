@@ -19,6 +19,7 @@ export interface IProduct extends Document {
   isPromo: boolean;
   unlimitedStock: boolean;
   hidePrice: boolean;
+  orderCount: number;
 }
 
 const productSchema = new Schema<IProduct>(
@@ -41,6 +42,7 @@ const productSchema = new Schema<IProduct>(
     isPromo: { type: Boolean, default: false },
     unlimitedStock: { type: Boolean, default: false },
     hidePrice: { type: Boolean, default: false },
+    orderCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
 );
@@ -49,6 +51,6 @@ productSchema.index({ title: 1 });
 productSchema.index({ categoryId: 1 });
 productSchema.index({ brandId: 1 });
 productSchema.index({ isActive: 1, price: 1 });
-productSchema.index({ isActive: 1, isPromo: -1, createdAt: -1 });
+productSchema.index({ isActive: 1, isPromo: -1, orderCount: -1, createdAt: -1 });
 
 export const Product = mongoose.model<IProduct>('Product', productSchema);

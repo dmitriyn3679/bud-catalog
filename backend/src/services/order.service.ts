@@ -75,6 +75,17 @@ export async function createFromCart(userId: string, data: CreateOrderData) {
         ),
     );
 
+    // Increment orderCount for all products in the order (1 per product per order)
+    await Promise.all(
+      cart.items.map((item) =>
+        Product.findByIdAndUpdate(
+          item.productId._id,
+          { $inc: { orderCount: 1 } },
+          { session },
+        ),
+      ),
+    );
+
     await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } }, { session });
 
     await session.commitTransaction();
@@ -151,6 +162,12 @@ export async function createAdminOrder(
         .map((item) =>
           Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } }, { session }),
         ),
+    );
+
+    await Promise.all(
+      items.map((item) =>
+        Product.findByIdAndUpdate(item.productId, { $inc: { orderCount: 1 } }, { session }),
+      ),
     );
 
     await session.commitTransaction();
@@ -531,13 +548,18 @@ export async function updateStatus(orderId: string, status: OrderStatus) {
       (await Product.find({ _id: { $in: productIds }, unlimitedStock: true }).select('_id').lean())
         .map((p) => String(p._id)),
     );
-    await Promise.all(
-      order.items
+    await Promise.all([
+      ...order.items
         .filter((item) => !unlimitedIds.has(String(item.productId)))
         .map((item) =>
           Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } }),
         ),
-    );
+      ...order.items.map((item) =>
+        Product.findByIdAndUpdate(item.productId, [
+          { $set: { orderCount: { $max: [{ $subtract: ['$orderCount', 1] }, 0] } } },
+        ]),
+      ),
+    ]);
   }
 
   return order;

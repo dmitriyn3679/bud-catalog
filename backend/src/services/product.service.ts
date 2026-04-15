@@ -21,7 +21,7 @@ function buildSort(sort: SortOption | undefined): any {
     case 'price_asc':  return { price: 1 };
     case 'price_desc': return { price: -1 };
     case 'recommended':
-    default:           return { isPromo: -1, createdAt: -1 };
+    default:           return { isPromo: -1, orderCount: -1, createdAt: -1 };
   }
 }
 
@@ -188,7 +188,7 @@ export async function getAllAdmin(filters: ProductFilters) {
       .select('+purchasePrice')
       .populate('categoryId', 'name slug')
       .populate('brandId', 'name slug')
-      .sort({ isPromo: -1, createdAt: -1 })
+      .sort({ isPromo: -1, orderCount: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),
