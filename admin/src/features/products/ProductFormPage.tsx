@@ -200,7 +200,7 @@ export function ProductFormPage() {
 
           <Paper withBorder p="lg" radius="md">
             <Title order={5} mb="md">Ціни та склад</Title>
-            <Group grow align="flex-start">
+            <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm" align="flex-start">
               <Controller
                 name="purchasePrice"
                 control={control}
@@ -271,7 +271,7 @@ export function ProductFormPage() {
                   />
                 )}
               />
-            </Group>
+            </SimpleGrid>
           </Paper>
 
           {/* Images */}
@@ -366,7 +366,7 @@ export function ProductFormPage() {
             </Stack>
           </Paper>
 
-          <Group>
+          <Group grow={{ base: true, sm: false }}>
             <Button type="submit" loading={isSubmitting || uploadImages.isPending}>
               {isEdit ? 'Зберегти зміни' : 'Створити товар'}
             </Button>

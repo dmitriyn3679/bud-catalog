@@ -10,7 +10,7 @@ import {
   Stack,
   Text,
 } from '@mantine/core';
-import { useDebouncedCallback } from '@mantine/hooks';
+import { useDebouncedCallback, useMediaQuery } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconTrash, IconShoppingBag } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -31,6 +31,7 @@ function CartItem({
   const updateItem = useUpdateCartItem();
   const removeItem = useRemoveCartItem();
   const [qty, setQty] = useState<number>(item.quantity);
+  const isMobile = useMediaQuery('(max-width: 600px)');
 
   const sendUpdate = useDebouncedCallback(async (value: number) => {
     const clamped = value < 1 ? 1 : value;
@@ -49,29 +50,96 @@ function CartItem({
     sendUpdate(num);
   };
 
+  const image = (
+    <Box
+      style={{
+        width: 72,
+        height: 72,
+        borderRadius: 8,
+        overflow: 'hidden',
+        background: 'var(--mantine-color-gray-0)',
+        border: '1px solid var(--mantine-color-gray-2)',
+        flexShrink: 0,
+        padding: 4,
+      }}
+    >
+      <Image
+        src={product.images[0]?.url}
+        w="100%"
+        h="100%"
+        fit="contain"
+        fallbackSrc="https://placehold.co/72x72?text=?"
+      />
+    </Box>
+  );
+
+  const deleteBtn = (
+    <ActionIcon
+      color="gray"
+      variant="subtle"
+      size="sm"
+      onClick={() => removeItem.mutate(product._id)}
+      loading={removeItem.isPending}
+    >
+      <IconTrash size={15} />
+    </ActionIcon>
+  );
+
+  const qtyInput = (
+    <NumberInput
+      value={qty}
+      onChange={handleChange}
+      min={1}
+      max={effectiveStock}
+      w={76}
+      size="sm"
+      styles={{ input: { background: '#fff', textAlign: 'center' } }}
+    />
+  );
+
+  const subtotal = (
+    <Text fw={600} w={80} ta="right" size="sm" style={{ whiteSpace: 'nowrap' }} c={product.hidePrice ? 'dimmed' : undefined}>
+      {product.hidePrice ? '—' : `${(product.price * qty).toLocaleString('uk-UA')} ₴`}
+    </Text>
+  );
+
+  if (isMobile) {
+    return (
+      <Group align="flex-start" wrap="nowrap" gap="md">
+        {image}
+        <Box flex={1} style={{ overflow: 'hidden', minWidth: 0 }}>
+          <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+            <Text
+              fw={500}
+              size="sm"
+              lineClamp={2}
+              component={Link}
+              to={`/product/${product._id}`}
+              style={{ textDecoration: 'none', color: 'inherit', flex: 1, minWidth: 0 }}
+            >
+              {product.title}
+            </Text>
+            {deleteBtn}
+          </Group>
+          {product.hidePrice
+            ? <Text size="sm" c="dimmed" fs="italic" mt={4}>Ціна уточнюється</Text>
+            : <Text size="sm" fw={600} mt={4}>{product.price.toLocaleString('uk-UA')} ₴</Text>
+          }
+          <Text size="xs" c="dimmed" mt={2}>
+            Залишок: {product.unlimitedStock ? '+9999' : product.stock} шт.
+          </Text>
+          <Group mt="xs" align="center" gap="sm">
+            {qtyInput}
+            {subtotal}
+          </Group>
+        </Box>
+      </Group>
+    );
+  }
+
   return (
     <Group align="flex-start" wrap="nowrap" gap="md">
-      <Box
-        style={{
-          width: 72,
-          height: 72,
-          borderRadius: 8,
-          overflow: 'hidden',
-          background: 'var(--mantine-color-gray-0)',
-          border: '1px solid var(--mantine-color-gray-2)',
-          flexShrink: 0,
-          padding: 4,
-        }}
-      >
-        <Image
-          src={product.images[0]?.url}
-          w="100%"
-          h="100%"
-          fit="contain"
-          fallbackSrc="https://placehold.co/72x72?text=?"
-        />
-      </Box>
-
+      {image}
       <Box flex={1} style={{ overflow: 'hidden' }}>
         <Text
           fw={500}
@@ -91,29 +159,10 @@ function CartItem({
           Залишок: {product.unlimitedStock ? '+9999' : product.stock} шт.
         </Text>
       </Box>
-
       <Group align="center" wrap="nowrap" gap="sm" style={{ flexShrink: 0 }}>
-        <NumberInput
-          value={qty}
-          onChange={handleChange}
-          min={1}
-          max={effectiveStock}
-          w={76}
-          size="sm"
-          styles={{ input: { background: '#fff', textAlign: 'center' } }}
-        />
-        <Text fw={600} w={80} ta="right" size="sm" style={{ whiteSpace: 'nowrap' }} c={product.hidePrice ? 'dimmed' : undefined}>
-          {product.hidePrice ? '—' : `${(product.price * qty).toLocaleString('uk-UA')} ₴`}
-        </Text>
-        <ActionIcon
-          color="gray"
-          variant="subtle"
-          size="sm"
-          onClick={() => removeItem.mutate(product._id)}
-          loading={removeItem.isPending}
-        >
-          <IconTrash size={15} />
-        </ActionIcon>
+        {qtyInput}
+        {subtotal}
+        {deleteBtn}
       </Group>
     </Group>
   );

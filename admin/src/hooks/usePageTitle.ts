@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const APP_NAME = 'Admin Panel';
+const APP_NAME = 'Bud-Catalog Admin';
 
 export function usePageTitle(title?: string) {
   useEffect(() => {

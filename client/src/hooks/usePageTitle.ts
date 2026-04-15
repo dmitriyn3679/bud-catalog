@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const APP_NAME = 'Catalog Shop';
+const APP_NAME = 'Bud-Catalog';
 
 export function usePageTitle(title?: string) {
   useEffect(() => {

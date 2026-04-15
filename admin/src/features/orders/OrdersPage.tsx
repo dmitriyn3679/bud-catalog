@@ -94,7 +94,7 @@ export function OrdersPage() {
             <Table.Th>Клієнт</Table.Th>
             <Table.Th>Сума</Table.Th>
             <Table.Th>Прибуток</Table.Th>
-            <Table.Th>Статус</Table.Th>
+            <Table.Th style={{ whiteSpace: 'nowrap' }}>Статус</Table.Th>
             <Table.Th ta="center">Оплата</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -119,7 +119,7 @@ export function OrdersPage() {
                 <Table.Td fw={600} c={profit >= 0 ? 'green' : 'red'}>
                   {profit.toLocaleString('uk-UA')} ₴
                 </Table.Td>
-                <Table.Td><OrderStatusBadge status={order.status as AdminOrder['status']} /></Table.Td>
+                <Table.Td style={{ whiteSpace: 'nowrap' }}><OrderStatusBadge status={order.status as AdminOrder['status']} /></Table.Td>
                 <Table.Td ta="center">
                   {order.status !== 'cancelled' && (
                     <Tooltip label={order.isPaid ? 'Сплачено' : 'Не сплачено'} withArrow>

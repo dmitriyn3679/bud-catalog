@@ -16,8 +16,7 @@ export interface ProductFilters {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildSort(sort: SortOption | undefined, hasSearch: boolean): any {
-  if (hasSearch) return { score: { $meta: 'textScore' } };
+function buildSort(sort: SortOption | undefined): any {
   switch (sort) {
     case 'price_asc':  return { price: 1 };
     case 'price_desc': return { price: -1 };
@@ -35,7 +34,10 @@ export async function getAll(filters: ProductFilters, userId?: string) {
     query.categoryId = { $in: ids };
   }
   if (brand) query.brandId = brand;
-  if (search) query.$text = { $search: search };
+  if (search) {
+    const re = { $regex: search, $options: 'i' };
+    query.$or = [{ title: re }, { description: re }];
+  }
 
   const skip = (page - 1) * limit;
   const [rawItems, total] = await Promise.all([
@@ -43,7 +45,7 @@ export async function getAll(filters: ProductFilters, userId?: string) {
       .select('+purchasePrice')
       .populate('categoryId', 'name slug')
       .populate('brandId', 'name slug')
-      .sort(buildSort(sort, !!search))
+      .sort(buildSort(sort))
       .skip(skip)
       .limit(limit)
       .lean() as Promise<PricedProduct[]>,
@@ -175,7 +177,10 @@ export async function getAllAdmin(filters: ProductFilters) {
     query.categoryId = { $in: ids };
   }
   if (brand) query.brandId = brand;
-  if (search) query.$text = { $search: search };
+  if (search) {
+    const re = { $regex: search, $options: 'i' };
+    query.$or = [{ title: re }, { description: re }];
+  }
 
   const skip = (page - 1) * limit;
   const [items, total] = await Promise.all([
@@ -183,7 +188,7 @@ export async function getAllAdmin(filters: ProductFilters) {
       .select('+purchasePrice')
       .populate('categoryId', 'name slug')
       .populate('brandId', 'name slug')
-      .sort(search ? { score: { $meta: 'textScore' } } : { isPromo: -1, createdAt: -1 })
+      .sort({ isPromo: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),

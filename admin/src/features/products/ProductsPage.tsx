@@ -327,7 +327,7 @@ export function ProductsPage() {
                 </Table.Td>
                 <Table.Td>{p.unlimitedStock ? '∞' : p.stock}</Table.Td>
                 <Table.Td>
-                  <Badge color={p.isActive ? 'green' : 'gray'} variant="light">
+                  <Badge color={p.isActive ? 'green' : 'gray'} variant="light" styles={{ label: { overflow: 'visible' } }}>
                     {p.isActive ? 'Активний' : 'Прихований'}
                   </Badge>
                 </Table.Td>

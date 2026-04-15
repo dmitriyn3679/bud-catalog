@@ -10,5 +10,5 @@ const STATUS_MAP: Record<AdminOrder['status'], { label: string; color: string }>
 
 export function OrderStatusBadge({ status }: { status: AdminOrder['status'] }) {
   const { label, color } = STATUS_MAP[status];
-  return <Badge color={color}>{label}</Badge>;
+  return <Badge color={color} styles={{ label: { overflow: 'visible' } }}>{label}</Badge>;
 }

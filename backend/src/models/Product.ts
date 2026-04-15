@@ -45,7 +45,7 @@ const productSchema = new Schema<IProduct>(
   { timestamps: true },
 );
 
-productSchema.index({ title: 'text', description: 'text' });
+productSchema.index({ title: 1 });
 productSchema.index({ categoryId: 1 });
 productSchema.index({ brandId: 1 });
 productSchema.index({ isActive: 1, price: 1 });
