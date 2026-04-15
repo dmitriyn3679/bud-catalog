@@ -19,7 +19,7 @@
     "test": "vitest run --config backend/vitest.config.ts",
     "test:watch": "vitest --config backend/vitest.config.ts",
     "test:coverage": "vitest run --config backend/vitest.config.ts --coverage",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
