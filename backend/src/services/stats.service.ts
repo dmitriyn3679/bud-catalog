@@ -1,6 +1,7 @@
 import { Types, PipelineStage } from 'mongoose';
 import { Order } from '../models/Order';
 import { getDescendantIds } from './category.service';
+import { sumExpenses } from './expense.service';
 
 interface StatsFilters {
   categoryId?: string;
@@ -14,6 +15,7 @@ interface StatsResult {
   totalUnitsSold: number;
   totalRevenue: number;
   totalCost: number;
+  totalExpenses: number;
   totalProfit: number;
   avgMarkupPercent: number;
 }
@@ -92,13 +94,24 @@ export async function getStats(filters: StatsFilters): Promise<StatsResult> {
   );
 
   const [result] = await Order.aggregate(pipeline);
+  const totalExpenses = await sumExpenses(filters.dateFrom, filters.dateTo);
 
-  return result ?? {
-    totalOrders: 0,
-    totalUnitsSold: 0,
-    totalRevenue: 0,
-    totalCost: 0,
-    totalProfit: 0,
-    avgMarkupPercent: 0,
+  if (!result) {
+    return {
+      totalOrders: 0,
+      totalUnitsSold: 0,
+      totalRevenue: 0,
+      totalCost: 0,
+      totalExpenses,
+      totalProfit: Math.round(-totalExpenses * 100) / 100,
+      avgMarkupPercent: 0,
+    };
+  }
+
+  const grossProfit: number = result.totalProfit;
+  return {
+    ...result,
+    totalExpenses,
+    totalProfit: Math.round((grossProfit - totalExpenses) * 100) / 100,
   };
 }

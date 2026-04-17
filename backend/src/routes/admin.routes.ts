@@ -7,6 +7,7 @@ import { roleGuard } from '../middlewares/roleGuard';
 import { ORDER_STATUSES } from '../models/Order';
 import * as controller from '../controllers/admin.controller';
 import * as adminAuthController from '../controllers/admin.auth.controller';
+import * as expenseController from '../controllers/expense.controller';
 
 export const adminRouter = Router();
 
@@ -75,6 +76,20 @@ adminRouter.patch('/orders/:id/paid', validate(updatePaidSchema), asyncHandler(c
 adminRouter.patch('/orders/:id/items', validate(updateItemsSchema), asyncHandler(controller.updateOrderItems));
 adminRouter.patch('/orders/:id/actual-prices', validate(actualPricesSchema), asyncHandler(controller.updateActualPrices));
 adminRouter.get('/stats', asyncHandler(controller.getStats));
+
+const expenseSchema = z.object({
+  body: z.object({
+    amount: z.number().min(0),
+    description: z.string().min(1),
+    category: z.enum(['rent', 'salary', 'utilities', 'marketing', 'logistics', 'other']),
+    date: z.string().min(1),
+  }),
+});
+
+adminRouter.get('/expenses', asyncHandler(expenseController.listExpenses));
+adminRouter.post('/expenses', validate(expenseSchema), asyncHandler(expenseController.createExpense));
+adminRouter.put('/expenses/:id', validate(expenseSchema), asyncHandler(expenseController.updateExpense));
+adminRouter.delete('/expenses/:id', asyncHandler(expenseController.deleteExpense));
 
 const markupSchema = z.object({
   body: z.object({ markupPercent: z.number().min(0) }),

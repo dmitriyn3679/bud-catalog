@@ -6,6 +6,7 @@ import {
   IconFolderOpen,
   IconLogout,
   IconPackage,
+  IconReceipt,
   IconTag,
   IconUsers,
 } from '@tabler/icons-react';
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { label: 'Бренди',     icon: IconTag,           href: '/admin/brands'     },
   { label: 'Клієнти',    icon: IconUsers,         href: '/admin/users'      },
   { label: 'Замовлення', icon: IconClipboardList,  href: '/admin/orders'     },
+  { label: 'Витрати',    icon: IconReceipt,        href: '/admin/expenses'   },
   { label: 'Статистика', icon: IconChartBar,      href: '/admin/stats'      },
 ];
 

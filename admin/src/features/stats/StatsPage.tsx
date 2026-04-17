@@ -97,7 +97,12 @@ export function StatsPage() {
             color="dimmed"
           />
           <StatCard
-            label="Прибуток"
+            label="Витрати"
+            value={`${fmt(stats.totalExpenses)} ₴`}
+            color="red"
+          />
+          <StatCard
+            label="Чистий прибуток"
             value={`${fmt(stats.totalProfit)} ₴`}
             color={stats.totalProfit >= 0 ? 'green' : 'red'}
           />

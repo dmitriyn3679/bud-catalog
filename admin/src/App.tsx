@@ -12,6 +12,7 @@ import { StatsPage } from './features/stats/StatsPage';
 import { CategoriesPage } from './features/categories/CategoriesPage';
 import { BrandsPage } from './features/brands/BrandsPage';
 import { UsersPage } from './features/users/UsersPage';
+import { ExpensesPage } from './features/expenses/ExpensesPage';
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
                   <Route path="orders" element={<OrdersPage />} />
                   <Route path="orders/new" element={<CreateOrderPage />} />
                   <Route path="orders/:id" element={<OrderDetailPage />} />
+                  <Route path="expenses" element={<ExpensesPage />} />
                   <Route path="stats" element={<StatsPage />} />
                 </Routes>
               </AdminLayout>

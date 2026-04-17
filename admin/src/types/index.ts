@@ -87,8 +87,20 @@ export interface Stats {
   totalUnitsSold: number;
   totalRevenue: number;
   totalCost: number;
+  totalExpenses: number;
   totalProfit: number;
   avgMarkupPercent: number;
+}
+
+export type ExpenseCategory = 'rent' | 'salary' | 'utilities' | 'marketing' | 'logistics' | 'other';
+
+export interface Expense {
+  _id: string;
+  amount: number;
+  description: string;
+  category: ExpenseCategory;
+  date: string;
+  createdAt: string;
 }
 
 export interface AdminUser {
