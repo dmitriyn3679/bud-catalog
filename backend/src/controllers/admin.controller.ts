@@ -56,6 +56,8 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const downloadInvoice = async (req: Request<{ id: string }>, res: Response) => {
   const order = await orderService.getOrderById(req.params.id);
+  const hidePrices = req.query.hidePrices === 'true';
+  const hideCustomer = req.query.hideCustomer === 'true';
   const buffer = await generateInvoice({
     orderId: String(order._id),
     createdAt: (order as unknown as { createdAt: Date }).createdAt,
@@ -68,6 +70,8 @@ export const downloadInvoice = async (req: Request<{ id: string }>, res: Respons
       ? undefined
       : (order.userId as unknown as { phone?: string }).phone,
     note: (order as unknown as { note?: string }).note,
+    hidePrices,
+    hideCustomer,
   });
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename="invoice-${String(order._id).slice(-6).toUpperCase()}.pdf"`);

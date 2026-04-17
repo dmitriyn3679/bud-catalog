@@ -10,6 +10,7 @@ import {
   Loader,
   NumberInput,
   Paper,
+  Popover,
   Select,
   Stack,
   Table,
@@ -149,11 +150,19 @@ export function OrderDetailPage() {
 
   const canEdit = order && ['pending', 'processing'].includes(order.status);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [invoicePopoverOpen, setInvoicePopoverOpen] = useState(false);
+  const [invoiceHidePrices, setInvoiceHidePrices] = useState(false);
+  const [invoiceHideCustomer, setInvoiceHideCustomer] = useState(false);
 
   const handleDownloadInvoice = async () => {
     setInvoiceLoading(true);
+    setInvoicePopoverOpen(false);
     try {
-      const res = await api.get(`/admin/orders/${id}/invoice`, { responseType: 'blob' });
+      const params = new URLSearchParams();
+      if (invoiceHidePrices) params.set('hidePrices', 'true');
+      if (invoiceHideCustomer) params.set('hideCustomer', 'true');
+      const query = params.toString() ? `?${params.toString()}` : '';
+      const res = await api.get(`/admin/orders/${id}/invoice${query}`, { responseType: 'blob' });
       const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       const a = document.createElement('a');
       a.href = url;
@@ -336,15 +345,51 @@ export function OrderDetailPage() {
           <OrderStatusBadge status={order.status} />
         </Group>
         <Group gap="xs" wrap="wrap">
-          <Button
-            variant="light"
-            color="gray"
-            leftSection={<IconDownload size={14} />}
-            loading={invoiceLoading}
-            onClick={handleDownloadInvoice}
+          <Popover
+            opened={invoicePopoverOpen}
+            onClose={() => setInvoicePopoverOpen(false)}
+            position="bottom-end"
+            withArrow
+            shadow="md"
+            width={220}
           >
-            Накладна
-          </Button>
+            <Popover.Target>
+              <Button
+                variant="light"
+                color="gray"
+                leftSection={<IconDownload size={14} />}
+                loading={invoiceLoading}
+                onClick={() => setInvoicePopoverOpen((o) => !o)}
+              >
+                Накладна
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Stack gap="xs">
+                <Text size="xs" fw={600} c="dimmed">Налаштування накладної</Text>
+                <Checkbox
+                  size="sm"
+                  label="Приховати ціни та суму"
+                  checked={invoiceHidePrices}
+                  onChange={(e) => setInvoiceHidePrices(e.currentTarget.checked)}
+                />
+                <Checkbox
+                  size="sm"
+                  label="Приховати клієнта"
+                  checked={invoiceHideCustomer}
+                  onChange={(e) => setInvoiceHideCustomer(e.currentTarget.checked)}
+                />
+                <Button
+                  size="xs"
+                  leftSection={<IconDownload size={13} />}
+                  onClick={handleDownloadInvoice}
+                  mt={4}
+                >
+                  Завантажити
+                </Button>
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
           {canEdit && !editMode && (
             <Button
               variant="light"

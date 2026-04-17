@@ -22,6 +22,8 @@ export type InvoiceData = {
   customerName?: string;
   customerPhone?: string;
   note?: string;
+  hidePrices?: boolean;
+  hideCustomer?: boolean;
 };
 
 export async function generateInvoice(data: InvoiceData): Promise<Buffer> {
@@ -29,22 +31,38 @@ export async function generateInvoice(data: InvoiceData): Promise<Buffer> {
   const date = new Date(data.createdAt).toLocaleDateString('uk-UA');
   const orderNum = data.orderId.slice(-6).toUpperCase();
 
+  const hidePrices = data.hidePrices ?? false;
+  const hideCustomer = data.hideCustomer ?? false;
+
+  const tableHeader = hidePrices
+    ? [
+        { text: '№', style: 'th', alignment: 'center' },
+        { text: 'Артикул', style: 'th' },
+        { text: 'Назва', style: 'th' },
+        { text: 'К-сть', style: 'th', alignment: 'center' },
+      ]
+    : [
+        { text: '№', style: 'th', alignment: 'center' },
+        { text: 'Артикул', style: 'th' },
+        { text: 'Назва', style: 'th' },
+        { text: 'К-сть', style: 'th', alignment: 'center' },
+        { text: 'Ціна', style: 'th', alignment: 'right' },
+        { text: 'Сума', style: 'th', alignment: 'right' },
+      ];
+
   const tableBody = [
-    [
-      { text: '№', style: 'th', alignment: 'center' },
-      { text: 'Артикул', style: 'th' },
-      { text: 'Назва', style: 'th' },
-      { text: 'К-сть', style: 'th', alignment: 'center' },
-      { text: 'Ціна', style: 'th', alignment: 'right' },
-      { text: 'Сума', style: 'th', alignment: 'right' },
-    ],
+    tableHeader,
     ...activeItems.map((item, i) => {
       const hasPrice = item.price > 0;
-      return [
+      const baseRow = [
         { text: String(i + 1), alignment: 'center' },
         { text: item.sku || '\u2014' },
         { text: item.title },
         { text: String(item.quantity), alignment: 'center' },
+      ];
+      if (hidePrices) return baseRow;
+      return [
+        ...baseRow,
         { text: hasPrice ? `${item.price.toLocaleString('uk-UA')} грн` : '\u2014', alignment: 'right' },
         {
           text: hasPrice ? `${(item.price * item.quantity).toLocaleString('uk-UA')} грн` : '\u2014',
@@ -58,6 +76,39 @@ export async function generateInvoice(data: InvoiceData): Promise<Buffer> {
     .filter((i) => i.price > 0)
     .reduce((sum, i) => sum + i.price * i.quantity, 0);
 
+  const tableWidths = hidePrices ? [20, 70, '*', 35] : [20, 70, '*', 35, 75, 75];
+
+  const customerBlock = hideCustomer
+    ? []
+    : [
+        { text: [{ text: 'Клієнт: ', bold: true }, data.customerName || '\u0420\u043e\u0437\u0434\u0440\u0456\u0431\u043d\u0438\u0439 \u043a\u043b\u0456\u0454\u043d\u0442'], marginBottom: 4 },
+        ...(data.customerPhone
+          ? [{ text: [{ text: 'Телефон: ', bold: true }, data.customerPhone], marginBottom: 4 }]
+          : []),
+      ];
+
+  const addressLine = hideCustomer
+    ? []
+    : [{ text: [{ text: 'Адреса: ', bold: true }, data.deliveryAddress], marginBottom: data.note ? 4 : 16 }];
+
+  const totalBlock = hidePrices
+    ? []
+    : [
+        {
+          columns: [
+            { text: '' },
+            {
+              width: 'auto',
+              text: [
+                { text: 'Разом: ', bold: true, fontSize: 12 },
+                { text: `${total.toLocaleString('uk-UA')} грн`, fontSize: 12 },
+              ],
+              alignment: 'right',
+            },
+          ],
+        },
+      ];
+
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 40, 40, 40],
@@ -66,17 +117,14 @@ export async function generateInvoice(data: InvoiceData): Promise<Buffer> {
       { text: 'ВИДАТКОВА НАКЛАДНА', style: 'title' },
       { text: `\u2116 ${orderNum}   \u0432\u0456\u0434 ${date}`, style: 'subtitle' },
       { text: ' ', marginBottom: 12 },
-      { text: [{ text: 'Клієнт: ', bold: true }, data.customerName || '\u0420\u043e\u0437\u0434\u0440\u0456\u0431\u043d\u0438\u0439 \u043a\u043b\u0456\u0454\u043d\u0442'], marginBottom: 4 },
-      ...(data.customerPhone
-        ? [{ text: [{ text: 'Телефон: ', bold: true }, data.customerPhone], marginBottom: 4 }]
-        : []),
-      { text: [{ text: 'Адреса: ', bold: true }, data.deliveryAddress], marginBottom: data.note ? 4 : 16 },
+      ...customerBlock,
+      ...addressLine,
       ...(data.note
         ? [{ text: [{ text: 'Примітка: ', bold: true }, data.note], marginBottom: 16 }]
         : []),
       {
         table: {
-          widths: [20, 70, '*', 35, 75, 75],
+          widths: tableWidths,
           headerRows: 1,
           body: tableBody,
         },
@@ -89,19 +137,7 @@ export async function generateInvoice(data: InvoiceData): Promise<Buffer> {
         },
         marginBottom: 12,
       },
-      {
-        columns: [
-          { text: '' },
-          {
-            width: 'auto',
-            text: [
-              { text: 'Разом: ', bold: true, fontSize: 12 },
-              { text: `${total.toLocaleString('uk-UA')} грн`, fontSize: 12 },
-            ],
-            alignment: 'right',
-          },
-        ],
-      },
+      ...totalBlock,
     ],
     styles: {
       title: { fontSize: 16, bold: true, alignment: 'center', marginBottom: 4 },
